@@ -10,6 +10,13 @@
     rel="stylesheet">
   <link rel="stylesheet" href="css/auth-styles.css">
   <link rel="stylesheet" href="css/index-styles.css">
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/quizforge2026/service-worker.js')
+  .then(() => console.log("SW Registered"))
+  .catch(err => console.log("SW Error", err));
+}
+</script>
 </head>
 
 <body>
