@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizForge — MCQ Platform for Students</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/auth-styles.css">
+  <link rel="stylesheet" href="css/index-styles.css">
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════════════════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo" onclick="goHome()">
+      <div class="nav-logo-icon">🎯</div>
+      <span class="nav-logo-text">QuizForge</span>
+    </div>
+
+    <div class="nav-links">
+      <button class="nav-link active" id="nav-home-link" onclick="showPage('home')">होम</button>
+      <button class="nav-link" id="nav-quiz-link" onclick="showPage('quiz')">Quiz करें</button>
+      <button class="nav-link" id="nav-lb-link" onclick="showPage('leaderboard')">Leaderboard</button>
+      <button class="nav-link" id="nav-profile-link" onclick="showPage('profile');showProfilePage();" style="display:none">My Profile</button>
+      <button class="nav-link" id="nav-dashboard-link" onclick="showPage('dashboard')" style="display:none">Analytics</button>
+    </div>
+
+    <div class="nav-right">
+      <div id="nav-lang" class="lang-toggle" style="margin-right:4px">
+        <button class="lang-btn active" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" onclick="setLang('hi')">HI</button>
+      </div>
+      <div id="nav-guest">
+        <button class="btn-nav-login" id="btn-login" onclick="openAuthModal('login')">Login</button>
+        <button class="btn-nav-cta" id="btn-register" onclick="openAuthModal('login')">Free में Join करें</button>
+      </div>
+      <div id="user-menu" style="display:none"
+        onclick="document.getElementById('user-dropdown').classList.toggle('show')">
+        <div id="user-avatar" class="nav-avatar">U</div>
+        <div>
+          <div id="user-name" style="font-size:13px;font-weight:600">User</div>
+          <div class="nav-points" id="nav-points-header">⚡ 0 pts</div>
+        </div>
+        <div class="user-dropdown" id="user-dropdown">
+          <a href="#" onclick="showPage('profile');showProfilePage();return false;">👤 My Profile</a>
+          <a href="#" onclick="showPage('dashboard');return false;">📊 Analytics</a>
+          <div class="separator"></div>
+          <a href="#" onclick="signOutUser();return false;" style="color:#EF4444">🚪 Logout</a>
+        </div>
+      </div>
+      <button class="hamburger" onclick="toggleMobileMenu()" id="hamburger">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu"
+    style="position:fixed;top:64px;left:0;right:0;background:var(--surf);border-bottom:1px solid var(--border);z-index:999;padding:16px;display:none;flex-direction:column;gap:4px">
+    <button class="nav-link" id="mob-home-link" onclick="showPage('home');closeMobileMenu()" style="text-align:left">🏠 होम</button>
+    <button class="nav-link" id="mob-quiz-link" onclick="showPage('quiz');closeMobileMenu()" style="text-align:left">❓ Quiz करें</button>
+    <button class="nav-link" id="mob-lb-link" onclick="showPage('leaderboard');closeMobileMenu()" style="text-align:left">🏆 Leaderboard</button>
+    <button class="nav-link" id="mob-profile-link" onclick="showPage('profile');showProfilePage();closeMobileMenu()" style="display:none;text-align:left">👤 My Profile</button>
+    <button class="nav-link" id="mob-dashboard-link" onclick="showPage('dashboard');closeMobileMenu()" style="display:none;text-align:left">📊 Analytics</button>
+    <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
+    <button class="btn-nav-cta" style="width:100%" onclick="openModal('register');closeMobileMenu()">Free में Join करें
+      🚀</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     PAGE: HOME
+═══════════════════════════════════════════════════════════ -->
+  <div class="page active" id="page-home">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-grid"></div>
+
+      <!-- Floating mini cards -->
+      <div class="hero-floating-cards">
+        <div class="mini-card">
+          <span>🔥</span>
+          <div>
+            <div style="font-weight:700;font-size:13px">Rahul ने Score किया</div>
+            <div style="font-size:11px;color:var(--muted)">95% in Science</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-floating-cards2">
+        <div class="mini-card">
+          <span>🏆</span>
+          <div>
+            <div style="font-weight:700;font-size:13px">Daily Streak</div>
+            <div style="font-size:11px;color:var(--gold)">🔥 14 Days!</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-tag">
+        <div class="hero-tag-dot"></div>
+        India का #1 Free MCQ Platform
+      </div>
+
+      <h1 class="hero-title">
+        Exams के लिए<br>
+        <span class="hero-title-highlight">Smart तरीके से</span><br>
+        Practice करो
+      </h1>
+
+      <p class="hero-sub">
+        Class 9 से UPSC तक — हर Subject के MCQ, Timed Quiz, और AI-powered Analytics — सब Free!
+      </p>
+
+      <div class="hero-btns">
+        <button class="btn btn-primary btn-lg" onclick="startQuickQuiz()">
+          🚀 अभी Quiz शुरू करो
+        </button>
+        <button class="btn btn-secondary btn-lg" onclick="openModal('register')">
+          Free में Join करें →
+        </button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-val">50K+</div>
+          <div class="hero-stat-label">MCQ Questions</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val">2L+</div>
+          <div class="hero-stat-label">Students</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val">20+</div>
+          <div class="hero-stat-label">Subjects</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val">Free</div>
+          <div class="hero-stat-label">हमेशा के लिए</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ad Banner Top -->
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+      <div class="ad-banner">
+        📢 Ad Space — Monetag Native Banner (728×90) — <strong id="monetag-banner-1"></strong>
+      </div>
+    </div>
+
+    <!-- Subjects Grid -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-tag">📚 Subjects</div>
+        <h2 class="section-title">कौन सा Subject है आज?</h2>
+        <p class="section-sub">Class-wise, Topic-wise MCQs — हर Exam की तैयारी यहाँ</p>
+      </div>
+
+      <div class="subjects-grid">
+        <div class="subject-card subj-math card-hover" onclick="startSubjectQuiz('Mathematics')">
+          <div class="subject-icon">➕</div>
+          <div class="subject-name">Mathematics</div>
+          <div class="subject-count">8,500+ Questions</div>
+          <span class="badge badge-blue subject-badge">Class 6–12</span>
+        </div>
+        <div class="subject-card subj-sci card-hover" onclick="startSubjectQuiz('Science')">
+          <div class="subject-icon">🔬</div>
+          <div class="subject-name">Science</div>
+          <div class="subject-count">10,200+ Questions</div>
+          <span class="badge badge-green subject-badge">NCERT</span>
+        </div>
+        <div class="subject-card subj-eng card-hover" onclick="startSubjectQuiz('English')">
+          <div class="subject-icon">📝</div>
+          <div class="subject-name">English</div>
+          <div class="subject-count">5,800+ Questions</div>
+          <span class="badge badge-purple subject-badge">Grammar</span>
+        </div>
+        <div class="subject-card subj-phys card-hover" onclick="startSubjectQuiz('Physics')">
+          <div class="subject-icon">⚡</div>
+          <div class="subject-name">Physics</div>
+          <div class="subject-count">7,200+ Questions</div>
+          <span class="badge badge-blue subject-badge">JEE/NEET</span>
+        </div>
+        <div class="subject-card subj-chem card-hover" onclick="startSubjectQuiz('Chemistry')">
+          <div class="subject-icon">🧪</div>
+          <div class="subject-name">Chemistry</div>
+          <div class="subject-count">6,900+ Questions</div>
+          <span class="badge badge-red subject-badge">JEE/NEET</span>
+        </div>
+        <div class="subject-card subj-bio card-hover" onclick="startSubjectQuiz('Biology')">
+          <div class="subject-icon">🌿</div>
+          <div class="subject-name">Biology</div>
+          <div class="subject-count">9,100+ Questions</div>
+          <span class="badge badge-green subject-badge">NEET</span>
+        </div>
+        <div class="subject-card subj-hist card-hover" onclick="startSubjectQuiz('History')">
+          <div class="subject-icon">🏛️</div>
+          <div class="subject-name">History</div>
+          <div class="subject-count">4,200+ Questions</div>
+          <span class="badge badge-gold subject-badge">UPSC/SSC</span>
+        </div>
+        <div class="subject-card subj-geo card-hover" onclick="startSubjectQuiz('Geography')">
+          <div class="subject-icon">🌍</div>
+          <div class="subject-name">Geography</div>
+          <div class="subject-count">3,800+ Questions</div>
+          <span class="badge badge-orange subject-badge">UPSC</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div
+      style="background:var(--surf);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 24px">
+      <div style="max-width:1200px;margin:0 auto">
+        <div class="section-header">
+          <div class="section-tag">✨ Features</div>
+          <h2 class="section-title">क्यों Students को पसंद है QuizForge?</h2>
+          <p class="section-sub">सब कुछ जो एक Smart Student को चाहिए</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">⏱️</div>
+            <div class="feature-title">Timed Mock Tests</div>
+            <div class="feature-text">Real Exam जैसा माहौल — Timer, Negative Marking, और Strict Mode। JEE/NEET/UPSC की
+              perfect preparation।</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <div class="feature-title">AI Analytics</div>
+            <div class="feature-text">कमज़ोर Topics automatically detect होते हैं। AI बताता है कहाँ ज़्यादा ध्यान देना
+              है।</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔥</div>
+            <div class="feature-title">Daily Streak</div>
+            <div class="feature-text">रोज़ quiz करो, streak बढ़ाओ, badges जीतो। Gamification से learning fun बनती है!
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💡</div>
+            <div class="feature-title">Detailed Explanations</div>
+            <div class="feature-text">हर सवाल का step-by-step explanation — Hindi और English दोनों में।</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🏆</div>
+            <div class="feature-title">Live Leaderboard</div>
+            <div class="feature-text">अपने school, city, और पूरे India में rank देखो। Competition motivation देती है!
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📱</div>
+            <div class="feature-title">Mobile Friendly</div>
+            <div class="feature-text">Phone पर भी perfectly काम करता है — bus में, bed में, कहीं भी पढ़ो!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-tag">🗺️ Process</div>
+        <h2 class="section-title">कैसे काम करता है?</h2>
+      </div>
+      <div class="steps-row">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-title">Subject चुनो</div>
+          <div class="step-text">Class, Subject, और Topic select करो। Practice या Exam mode choose करो।</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-title">Quiz दो</div>
+          <div class="step-text">MCQs solve करो। Timer चलता रहेगा — बिल्कुल real exam जैसा!</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-title">Analysis देखो</div>
+          <div class="step-text">Score, accuracy, weak topics — सब analytics में दिखेगा।</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-title">Top करो!</div>
+          <div class="step-text">रोज़ practice करो, leaderboard पर climb करो, badges जीतो!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Banner -->
+    <div
+      style="background:linear-gradient(135deg,rgba(255,107,53,0.15),rgba(255,179,71,0.08));border-top:1px solid rgba(255,107,53,0.2);border-bottom:1px solid rgba(255,107,53,0.2);padding:80px 24px;text-align:center">
+      <div style="max-width:600px;margin:0 auto">
+        <h2 style="font-family:var(--font-display);font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:14px">
+          आज से ही शुरू करो! 🚀
+        </h2>
+        <p style="color:var(--muted);font-size:16px;margin-bottom:28px">2 lakh से ज़्यादा students पहले से QuizForge पर
+          हैं।<br>Free में join करो, कोई credit card नहीं चाहिए।</p>
+        <button class="btn btn-primary btn-lg" onclick="openAuthModal('login')" style="font-size:16px">
+          🎯 Free Account बनाओ
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-grid">
+          <div>
+            <div class="footer-logo">🎯 QuizForge</div>
+            <div class="footer-desc">India का सबसे बड़ा free MCQ platform। Class 9 से UPSC तक, हर exam की preparation
+              यहाँ होती है।</div>
+          </div>
+          <div>
+            <div class="footer-col-title">Subjects</div>
+            <a class="footer-link" href="#" onclick="startSubjectQuiz('Mathematics');return false">Mathematics</a>
+            <a class="footer-link" href="#" onclick="startSubjectQuiz('Physics');return false">Physics</a>
+            <a class="footer-link" href="#" onclick="startSubjectQuiz('Chemistry');return false">Chemistry</a>
+            <a class="footer-link" href="#" onclick="startSubjectQuiz('Biology');return false">Biology</a>
+            <a class="footer-link" href="#" onclick="startSubjectQuiz('History');return false">History</a>
+          </div>
+          <div>
+            <div class="footer-col-title">Exams</div>
+            <a class="footer-link" href="#" onclick="showPage('quiz');return false">JEE Mains</a>
+            <a class="footer-link" href="#" onclick="showPage('quiz');return false">NEET</a>
+            <a class="footer-link" href="#" onclick="showPage('quiz');return false">UPSC</a>
+            <a class="footer-link" href="#" onclick="showPage('quiz');return false">SSC CGL</a>
+            <a class="footer-link" href="#" onclick="showPage('quiz');return false">CBSE Boards</a>
+          </div>
+          <div>
+            <div class="footer-col-title">Company</div>
+            <a class="footer-link" href="#">About Us</a>
+            <a class="footer-link" href="#">Privacy Policy</a>
+            <a class="footer-link" href="#">Terms of Use</a>
+            <a class="footer-link" href="#">Contact</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div>© 2025 QuizForge. Made with ❤️ for Indian Students.</div>
+          <div>Ads by <span style="color:var(--gold)">Monetag</span></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     PAGE: QUIZ
+═══════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-quiz">
+
+    <!-- Setup Screen -->
+    <div class="quiz-setup" id="quiz-setup">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('home')">← वापस</button>
+      </div>
+      <h1 class="quiz-setup-title">Quiz Configure करो 🎯</h1>
+      <p class="quiz-setup-sub">अपनी जरूरत के हिसाब से settings choose करो</p>
+
+      <!-- Mode Selection -->
+      <div style="margin-bottom:20px">
+        <div class="form-label">Quiz Mode</div>
+        <div class="setup-options">
+          <div class="setup-option active" onclick="selectMode(this,'practice')">
+            <div class="setup-option-icon">📖</div>
+            <div class="setup-option-name">Practice Mode</div>
+            <div class="setup-option-sub">हर answer के बाद explanation</div>
+          </div>
+          <div class="setup-option" onclick="selectMode(this,'timed')">
+            <div class="setup-option-icon">⏱️</div>
+            <div class="setup-option-name">Timed Mode</div>
+            <div class="setup-option-sub">Timer on, results at end</div>
+          </div>
+          <div class="setup-option" onclick="selectMode(this,'exam')">
+            <div class="setup-option-icon">📋</div>
+            <div class="setup-option-name">Exam Mode</div>
+            <div class="setup-option-sub">Strict, Negative Marking</div>
+          </div>
+          <div class="setup-option" onclick="selectMode(this,'daily')">
+            <div class="setup-option-icon">🌟</div>
+            <div class="setup-option-name">Daily Challenge</div>
+            <div class="setup-option-sub">आज का special set</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-row">
+        <select class="setup-select" id="sel-subject">
+          <option value="">Subject चुनो</option>
+          <option value="Science">Science</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Biology">Biology</option>
+          <option value="History">History</option>
+          <option value="Geography">Geography</option>
+          <option value="English">English</option>
+        </select>
+        <select class="setup-select" id="sel-class">
+          <option value="">Class चुनो</option>
+          <option>Class 9</option>
+          <option>Class 10</option>
+          <option>Class 11</option>
+          <option>Class 12</option>
+          <option>Graduation</option>
+          <option>UPSC/SSC</option>
+        </select>
+      </div>
+
+      <div class="setup-row">
+        <select class="setup-select" id="sel-difficulty">
+          <option value="">Difficulty</option>
+          <option value="easy">Easy 🟢</option>
+          <option value="medium">Medium 🟡</option>
+          <option value="hard">Hard 🔴</option>
+        </select>
+        <select class="setup-select" id="sel-count">
+          <option value="10">10 Questions</option>
+          <option value="20">20 Questions</option>
+          <option value="30">30 Questions</option>
+          <option value="50">50 Questions (Full Test)</option>
+        </select>
+      </div>
+
+      <div style="margin-top:8px;margin-bottom:20px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px">
+          <input type="checkbox" id="chk-hindi" style="accent-color:var(--orange);width:16px;height:16px">
+          Hindi में भी दिखाओ (bilingual)
+        </label>
+      </div>
+
+      <button class="btn btn-primary btn-lg" style="width:100%" onclick="startQuiz()">
+        🚀 Quiz शुरू करो!
+      </button>
+
+      <!-- Ad in setup -->
+      <div class="ad-banner" style="margin-top:24px">
+        📢 Monetag Native Ad (320×100) — यहाँ आपका ad दिखेगा
+      </div>
+    </div>
+
+    <!-- Active Quiz -->
+    <div class="quiz-active" id="quiz-active">
+      <!-- Topbar -->
+      <div class="quiz-topbar">
+        <div class="quiz-topbar-inner">
+          <div class="quiz-progress-wrap">
+            <div class="quiz-progress-text">
+              <span id="q-progress-text">Question 1 of 10</span>
+              <span id="q-subject-label" style="color:var(--orange)">Science</span>
+            </div>
+            <div class="quiz-progress-bar">
+              <div class="quiz-progress-fill" id="quiz-progress-fill" style="width:10%"></div>
+            </div>
+          </div>
+
+          <div class="quiz-timer" id="quiz-timer">
+            <span>⏱</span>
+            <span id="timer-display">29:00</span>
+          </div>
+
+          <div class="quiz-score-live">
+            <div class="quiz-score-item">
+              <div class="quiz-score-val" id="live-correct" style="color:var(--green)">0</div>
+              <div class="quiz-score-lbl">सही</div>
+            </div>
+            <div class="quiz-score-item">
+              <div class="quiz-score-val" id="live-wrong" style="color:var(--red)">0</div>
+              <div class="quiz-score-lbl">गलत</div>
+            </div>
+          </div>
+
+          <button class="btn btn-danger btn-sm" onclick="confirmFinishQuiz()">Finish</button>
+        </div>
+      </div>
+
+      <!-- Quiz Body -->
+      <div class="quiz-body">
+        <div class="quiz-layout">
+          <!-- Question -->
+          <div id="question-area">
+            <div class="question-card" id="question-card">
+              <div class="question-meta">
+                <div class="question-num" id="q-num-label">Q 1</div>
+                <div>
+                  <span class="question-marks">⭐ <span id="q-marks">1</span> Mark</span>
+                  <span id="q-neg-marks" style="font-size:12px;color:var(--red);margin-left:8px"></span>
+                </div>
+              </div>
+
+              <div id="q-diff-badge" style="margin-bottom:12px"></div>
+              <p class="question-text" id="question-text-en">Loading...</p>
+              <p id="question-text-hi"
+                style="font-size:14px;color:var(--muted);margin-bottom:16px;display:none;font-style:italic"></p>
+
+              <div class="options-grid" id="options-container"></div>
+
+              <div class="explanation-box hidden" id="explanation-box">
+                <div class="explanation-title">💡 Explanation</div>
+                <div class="explanation-text" id="explanation-text"></div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="quiz-actions">
+              <button class="btn btn-ghost" onclick="prevQuestion()" id="btn-prev" disabled>← पिछला</button>
+
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-secondary btn-sm" onclick="skipQuestion()">Skip करो →</button>
+                <button class="btn btn-secondary btn-sm" onclick="bookmarkQuestion()" id="btn-bookmark">🔖 Save</button>
+              </div>
+
+              <button class="btn btn-primary" onclick="nextQuestion()" id="btn-next">
+                अगला →
+              </button>
+            </div>
+          </div>
+
+          <!-- Navigator Sidebar -->
+          <div class="q-navigator" id="q-navigator">
+            <div class="q-nav-title">Questions</div>
+            <div class="q-nav-grid" id="q-nav-grid"></div>
+            <div class="q-nav-legend">
+              <div class="q-nav-legend-item">
+                <div class="q-nav-dot" style="background:var(--orange)"></div> Current
+              </div>
+              <div class="q-nav-legend-item">
+                <div class="q-nav-dot" style="background:rgba(0,217,126,0.4)"></div> Answered
+              </div>
+              <div class="q-nav-legend-item">
+                <div class="q-nav-dot" style="background:rgba(255,179,71,0.4)"></div> Skipped
+              </div>
+              <div class="q-nav-legend-item">
+                <div class="q-nav-dot" style="background:var(--surf3)"></div> Not Visited
+              </div>
+            </div>
+
+            <div class="ad-sidebar" style="margin-top:16px">
+              📢<br>Monetag<br>Sidebar Ad<br><small>160×600</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     PAGE: RESULT
+═══════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-result">
+    <div class="result-wrapper">
+
+      <div class="result-hero">
+        <span class="result-emoji" id="result-emoji">🎉</span>
+        <h2 class="result-title" id="result-title">शानदार Performance!</h2>
+        <p class="result-sub" id="result-sub">तुमने बेहतरीन quiz दी!</p>
+
+        <div class="result-score-circle">
+          <div class="result-score-pct" id="result-pct">--</div>
+          <div class="result-score-label">Score</div>
+        </div>
+
+        <p style="font-size:13px;color:var(--muted);margin-top:8px" id="result-rank-msg"></p>
+
+        <!-- Progress Ring SVG -->
+        <svg width="0" height="0" style="position:absolute">
+          <defs>
+            <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#FF6B35" />
+              <stop offset="100%" style="stop-color:#FFB347" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="result-stats-row">
+        <div class="result-stat">
+          <div class="result-stat-val" id="rs-total" style="color:var(--blue)">--</div>
+          <div class="result-stat-lbl">Total Questions</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-val" id="rs-correct" style="color:var(--green)">--</div>
+          <div class="result-stat-lbl">सही ✓</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-val" id="rs-wrong" style="color:var(--red)">--</div>
+          <div class="result-stat-lbl">गलत ✗</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-val" id="rs-time" style="color:var(--gold)">--</div>
+          <div class="result-stat-lbl">Time लिया</div>
+        </div>
+      </div>
+
+      <!-- Monetag Ad After Result -->
+      <div class="ad-banner ad-banner-tall" id="ad-result">
+        📢 Monetag Interstitial / Banner Ad<br>
+        <small style="margin-top:6px;display:block">(After quiz result — highest CPM moment)</small>
+      </div>
+
+      <!-- Answer Review -->
+      <div class="result-analysis">
+        <div class="result-analysis-header">
+          📋 सवालों का Analysis
+        </div>
+        <div id="answer-review-list"></div>
+      </div>
+
+      <!-- CTA -->
+      <div class="result-cta">
+        <button class="btn btn-primary" onclick="startQuiz()">🔄 फिर से कोशिश करो</button>
+        <button class="btn btn-secondary" onclick="showPage('leaderboard')">🏆 Leaderboard देखो</button>
+        <button class="btn btn-secondary" onclick="showPage('home')">📚 दूसरा Subject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     PAGE: DASHBOARD (Analytics)
+═══════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-dashboard">
+    <div class="dash-wrapper">
+      <div class="dash-header">
+        <div class="dash-greeting">
+          <span class="dash-greeting-hi">Welcome back 👋</span>
+          <span class="dash-greeting-name" id="dash-greeting-name">Student</span>
+        </div>
+        <div class="dash-streak">
+          <div class="dash-streak-icon">🔥</div>
+          <div>
+            <div class="dash-streak-val" id="dash-stat-streak">0🔥</div>
+            <div class="dash-streak-lbl">Day Streak</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="dash-stats-grid">
+        <div class="dash-stat-card" style="--scolor:var(--orange)">
+          <div class="dash-stat-icon">⚡</div>
+          <div class="dash-stat-val" id="dash-stat-points">0</div>
+          <div class="dash-stat-lbl">Total Points</div>
+        </div>
+        <div class="dash-stat-card" style="--scolor:var(--blue)">
+          <div class="dash-stat-icon">📚</div>
+          <div class="dash-stat-val" id="dash-stat-quizzes">0</div>
+          <div class="dash-stat-lbl">Quizzes Given</div>
+        </div>
+        <div class="dash-stat-card" style="--scolor:var(--green)">
+          <div class="dash-stat-icon">✅</div>
+          <div class="dash-stat-val" id="dash-stat-correct">0</div>
+          <div class="dash-stat-lbl">Correct Answers</div>
+        </div>
+        <div class="dash-stat-card" style="--scolor:var(--purple)">
+          <div class="dash-stat-icon">🎯</div>
+          <div class="dash-stat-val" id="dash-stat-accuracy">0%</div>
+          <div class="dash-stat-lbl">Overall Accuracy</div>
+        </div>
+      </div>
+
+      <div id="analytics-content">
+        <div class="analytics-grid">
+          <!-- Accuracy Chart -->
+          <div class="chart-card">
+            <h3>Subject-wise Accuracy</h3>
+            <div class="chart-wrapper">
+              <canvas id="chart-accuracy"></canvas>
+            </div>
+            <div id="subject-stats-list" style="margin-top:16px"></div>
+          </div>
+
+          <!-- Weekly Chart -->
+          <div class="chart-card">
+            <h3>Last 7 Days Activity</h3>
+            <div class="chart-wrapper">
+              <canvas id="chart-weekly"></canvas>
+            </div>
+            <div id="improvement-tips" style="margin-top:20px"></div>
+          </div>
+        </div>
+
+        <!-- Recent History -->
+        <div class="dash-card" style="margin-bottom:20px">
+          <div class="dash-card-title">📋 Recent Quiz History</div>
+          <div style="overflow-x:auto;">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Subject</th>
+                  <th>Mode</th>
+                  <th>Score</th>
+                  <th>Accuracy</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="quiz-history-tbody">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div> <!-- /analytics-content -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     PAGE: PROFILE
+═══════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-profile">
+    <div class="dash-wrapper" id="profile-content">
+      <div class="auth-loader" style="display:flex">
+        <div class="auth-spinner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     PAGE: LEADERBOARD
+═══════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-leaderboard">
+    <div class="lb-wrapper">
+
+      <div class="section-header" style="margin-bottom:32px">
+        <div class="section-tag">🏆 Rankings</div>
+        <h2 class="section-title" style="text-align:center">Hall of Champions</h2>
+        <p class="section-sub" style="text-align:center">India के सबसे Smart Students</p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="tab-pills">
+        <button class="tab-pill active" onclick="switchLbTab(this,'global')">🌍 Global</button>
+        <button class="tab-pill" onclick="switchLbTab(this,'weekly')">📅 इस हफ्ते</button>
+        <button class="tab-pill" onclick="switchLbTab(this,'science')">🔬 Science</button>
+        <button class="tab-pill" onclick="switchLbTab(this,'math')">➕ Math</button>
+      </div>
+
+      <!-- Top 3 Podium -->
+      <div class="lb-top3" id="lb-podium"></div>
+
+      <!-- Leaderboard Table -->
+      <div class="lb-table-wrap">
+        <div class="lb-table-header">
+          <div>Rank</div>
+          <div>Student</div>
+          <div style="text-align:right">Points</div>
+          <div style="text-align:right">Accuracy</div>
+          <div style="text-align:right">Quizzes</div>
+        </div>
+        <div id="lb-table-body"></div>
+      </div>
+
+      <!-- Your Rank -->
+      <div
+        style="margin-top:16px;padding:16px 20px;background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.25);border-radius:var(--r-md);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:22px;font-weight:800;font-family:var(--font-display);color:var(--orange)">#23</div>
+          <div>
+            <div style="font-weight:600">तुम्हारी Rank (Arjun Singh)</div>
+            <div style="font-size:12px;color:var(--muted)">1,250 points · 78% accuracy</div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showPage('quiz')">Improve करो 📈</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     AUTH MODAL (Firebase Integrated)
+═══════════════════════════════════════════════════════════ -->
+  <div class="auth-modal-overlay" id="modal-auth">
+    <div class="auth-modal">
+      <button class="modal-close" onclick="closeAuthModal()">✕</button>
+      <div class="auth-header">
+        <h2>Welcome to QuizForge 🚀</h2>
+        <p>Apna account login ya create karo</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" data-tab="login" onclick="switchAuthTab('login')">Login / Sign Up</button>
+        <button class="auth-tab-btn" data-tab="phone" onclick="switchAuthTab('phone')">Phone OTP</button>
+      </div>
+
+      <!-- Loader -->
+      <div class="auth-loader" id="auth-loader">
+        <div class="auth-spinner"></div>
+        <div style="font-size:13px;color:rgba(232,235,245,0.6)">Please wait...</div>
+      </div>
+
+      <!-- Tab: Login/Google -->
+      <div class="auth-tab-content active" id="auth-tab-login">
+        <button class="auth-social-btn google" onclick="signInWithGoogle()">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="#FBBC05"
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+            <path fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="auth-divider">या</div>
+
+        <button class="auth-social-btn guest" onclick="signInAsGuest()">
+          👤 Continue as Guest (3 quizzes / day)
+        </button>
+      </div>
+
+      <!-- Tab: Phone OTP -->
+      <div class="auth-tab-content" id="auth-tab-phone">
+        <div id="phone-form">
+          <div class="phone-input-group">
+            <div class="phone-prefix">+91</div>
+            <input class="phone-input" id="phone-number" type="tel" placeholder="Mobile Number" maxlength="10">
+          </div>
+          <button class="btn-primary-full" onclick="handlePhoneSignIn()">Send OTP</button>
+          <div id="recaptcha-container" style="margin-top:10px;display:flex;justify-content:center"></div>
+        </div>
+
+        <div id="otp-form" style="display:none">
+          <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:12px">Enter the 6-digit OTP sent
+            to your phone</p>
+          <div class="otp-inputs">
+            <input class="otp-digit" type="text" maxlength="1" onkeyup="moveNext(this,1)">
+            <input class="otp-digit" type="text" maxlength="1" onkeyup="moveNext(this,2)">
+            <input class="otp-digit" type="text" maxlength="1" onkeyup="moveNext(this,3)">
+            <input class="otp-digit" type="text" maxlength="1" onkeyup="moveNext(this,4)">
+            <input class="otp-digit" type="text" maxlength="1" onkeyup="moveNext(this,5)">
+            <input class="otp-digit" type="text" maxlength="1" onkeyup="moveNext(this,6)">
+          </div>
+          <button class="btn-primary-full" onclick="handleVerifyOTP()">Verify OTP</button>
+          <button class="btn-primary-full" style="background:transparent;color:var(--orange);margin-top:8px"
+            onclick="switchAuthTab('phone');document.getElementById('otp-form').style.display='none';document.getElementById('phone-form').style.display='block'">Edit
+            Number</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Interstitial Ad ── -->
+  <div class="ad-interstitial" id="ad-interstitial">
+    <div class="ad-inter-box">
+      <div
+        style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">
+        Advertisement</div>
+      <div class="ad-inter-placeholder">
+        📢 Monetag Interstitial Ad<br>
+        <small style="margin-top:6px;display:block">Replace with actual Monetag script</small>
+      </div>
+      <div class="ad-skip-countdown" id="skip-countdown">5 seconds में skip कर सकते हो...</div>
+      <button class="ad-inter-skip" id="btn-skip-ad" onclick="closeInterstitial()" disabled>
+        Skip करो →
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Sticky Bottom Ad ── -->
+  <div class="ad-sticky-bottom" id="ad-sticky">
+    📢 Monetag Sticky Bottom Ad (320×50) — यहाँ आपका mobile ad
+    <button class="ad-sticky-close" onclick="document.getElementById('ad-sticky').style.display='none'">✕</button>
+  </div>
+
+  <!-- ── Points Toast ── -->
+  <div class="points-toast hidden" id="points-toast">
+    <div class="points-toast-icon">⚡</div>
+    <div>
+      <div class="points-toast-val" id="toast-pts">+50</div>
+      <div class="points-toast-lbl">Points earned!</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+  <script src="js/index-app.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <!-- Chart.js for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Firebase Modules -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-auth.js"></script>
+  <script src="js/firebase-db.js"></script>
+  <script src="js/firebase-analytics.js"></script>
+
+  <!-- Auth UI Handlers -->
+  <script>
+    function handlePhoneSignIn() {
+      const num = document.getElementById('phone-number').value;
+      if (num.length !== 10) return showToast('10 digit number daalo', 'warning');
+      signInWithPhone('+91' + num);
+    }
+    function handleVerifyOTP() {
+      const inputs = document.querySelectorAll('.otp-digit');
+      let otp = '';
+      inputs.forEach(i => otp += i.value);
+      if (otp.length !== 6) return showToast('6 digit OTP daalo', 'warning');
+      verifyOTP(otp);
+    }
+    function moveNext(el, num) {
+      if (el.value.length === 1 && num < 6) document.querySelectorAll('.otp-digit')[num].focus();
+    }
+  </script>
+</body>
+
+</html>

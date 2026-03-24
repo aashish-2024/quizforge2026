@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizForge — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Clash+Display:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin-styles.css">
+</head>
+<body>
+
+<!-- ══════════════════════ LOGIN ══════════════════════ -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">🎯</div>
+      <h2>QuizForge Admin</h2>
+      <p>OWNER PANEL · RESTRICTED ACCESS</p>
+    </div>
+
+    <div class="login-warning">⚠️ यह page सिर्फ site owner के लिए है।</div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:12px;display:flex;align-items:center;gap:10px" onclick="adminGoogleLogin()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Admin Login via Google
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════ APP ══════════════════════ -->
+<div id="app" style="display:none">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🎯</div>
+    <div>
+      <div class="logo-text">QuizForge</div>
+      <span class="logo-sub">Admin Panel</span>
+    </div>
+  </div>
+
+  <div class="sidebar-section-label">Overview</div>
+  <button class="nav-item active" onclick="showSection('overview')" data-page="overview">
+    <span class="nav-icon">📊</span> Dashboard
+  </button>
+  <button class="nav-item" onclick="showSection('analytics')" data-page="analytics">
+    <span class="nav-icon">📈</span> Analytics
+  </button>
+
+  <div class="sidebar-section-label">Content</div>
+  <button class="nav-item" onclick="showSection('questions')" data-page="questions">
+    <span class="nav-icon">❓</span> Questions
+    <span class="nav-badge" id="badge-q">0</span>
+  </button>
+  <button class="nav-item" onclick="showSection('subjects')" data-page="subjects">
+    <span class="nav-icon">📚</span> Subjects & Classes
+  </button>
+  <button class="nav-item" onclick="showSection('topics')" data-page="topics">
+    <span class="nav-icon">🏷️</span> Topics
+  </button>
+  <button class="nav-item" onclick="showSection('bulk')" data-page="bulk">
+    <span class="nav-icon">📥</span> Bulk Import
+  </button>
+
+  <div class="sidebar-section-label">Users</div>
+  <button class="nav-item" onclick="showSection('users')" data-page="users">
+    <span class="nav-icon">👥</span> Users
+    <span class="nav-badge" id="badge-u">0</span>
+  </button>
+  <button class="nav-item" onclick="showSection('reports')" data-page="reports">
+    <span class="nav-icon">🚩</span> Reports
+  </button>
+
+  <div class="sidebar-section-label">System</div>
+  <button class="nav-item" onclick="showSection('ads')" data-page="ads">
+    <span class="nav-icon">📢</span> Ad Management
+  </button>
+  <button class="nav-item" onclick="showSection('settings')" data-page="settings">
+    <span class="nav-icon">⚙️</span> Settings
+  </button>
+  <button class="nav-item" onclick="showSection('backup')" data-page="backup">
+    <span class="nav-icon">💾</span> Backup & Export
+  </button>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar">A</div>
+      <div>
+        <div class="user-name">Admin</div>
+        <div class="user-role">Owner</div>
+      </div>
+      <button onclick="doLogout()" title="Logout" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">⏻</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="page-title" id="page-title">Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn topbar-btn-secondary" onclick="window.open('index.html','_blank')">👁 Site देखो</button>
+      <button class="topbar-btn topbar-btn-primary" onclick="showSection('questions');setTimeout(()=>openQuestionModal(),200)">+ Question Add करो</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ═══════════ OVERVIEW PAGE ═══════════ -->
+  <div class="page active" id="page-overview">
+    <div class="stats-grid">
+      <div class="stat-card" style="--sc:var(--orange)">
+        <div class="stat-icon">❓</div>
+        <div class="stat-val" id="ov-total-q">0</div>
+        <div class="stat-lbl">Total Questions</div>
+        <div class="stat-change up" id="ov-q-today">+0 आज</div>
+      </div>
+      <div class="stat-card" style="--sc:var(--blue)">
+        <div class="stat-icon">👥</div>
+        <div class="stat-val" id="ov-users">0</div>
+        <div class="stat-lbl">Registered Users</div>
+        <div class="stat-change up">+2 इस हफ्ते</div>
+      </div>
+      <div class="stat-card" style="--sc:var(--green)">
+        <div class="stat-icon">📝</div>
+        <div class="stat-val" id="ov-quizzes">0</div>
+        <div class="stat-lbl">Quizzes Played</div>
+        <div class="stat-change up">↑ बढ़ रहा है</div>
+      </div>
+      <div class="stat-card" style="--sc:var(--purple)">
+        <div class="stat-icon">📚</div>
+        <div class="stat-val" id="ov-subjects">0</div>
+        <div class="stat-lbl">Active Subjects</div>
+        <div class="stat-change">सभी active</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-hd"><h2>⚡ Quick Actions</h2></div>
+    <div class="quick-actions" style="margin-bottom:24px">
+      <div class="qa-card" onclick="showSection('questions');setTimeout(()=>openQuestionModal(),200)">
+        <div class="qa-icon">➕</div>
+        <div class="qa-label">New Question</div>
+      </div>
+      <div class="qa-card" onclick="showSection('subjects');setTimeout(()=>openSubjectModal(),200)">
+        <div class="qa-icon">📚</div>
+        <div class="qa-label">New Subject</div>
+      </div>
+      <div class="qa-card" onclick="showSection('bulk')">
+        <div class="qa-icon">📥</div>
+        <div class="qa-label">Bulk Import</div>
+      </div>
+      <div class="qa-card" onclick="showSection('backup')">
+        <div class="qa-icon">💾</div>
+        <div class="qa-label">Export Data</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Subject Breakdown -->
+      <div class="card">
+        <div class="card-header"><h3>📚 Subject-wise Questions</h3></div>
+        <div class="card-body" id="subject-breakdown">
+          <p style="color:var(--muted);font-size:13px">Loading...</p>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-header"><h3>🕑 Recent Activity</h3></div>
+        <div class="card-body" id="activity-log">
+          <p style="color:var(--muted);font-size:13px">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ QUESTIONS PAGE ═══════════ -->
+  <div class="page" id="page-questions">
+    <div class="search-row">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input class="search-inp" id="q-search" placeholder="Questions search करो..." oninput="filterQuestions()">
+      </div>
+      <button class="btn btn-primary" onclick="openQuestionModal()">+ Question Add करो</button>
+      <button class="btn btn-secondary" onclick="showSection('bulk')">📥 Bulk Import</button>
+    </div>
+
+    <div class="filter-row" id="q-filter-row">
+      <button class="filter-chip active" onclick="filterBy(this,'all')">All</button>
+      <!-- Subject chips generated dynamically -->
+    </div>
+
+    <div class="filter-row">
+      <select class="sel" style="width:140px" id="flt-difficulty" onchange="filterQuestions()">
+        <option value="">All Difficulty</option>
+        <option value="easy">Easy 🟢</option>
+        <option value="medium">Medium 🟡</option>
+        <option value="hard">Hard 🔴</option>
+      </select>
+      <select class="sel" style="width:140px" id="flt-class" onchange="filterQuestions()">
+        <option value="">All Classes</option>
+      </select>
+      <span style="font-size:13px;color:var(--muted)" id="q-count-display">0 questions</span>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table id="questions-table">
+          <thead>
+            <tr>
+              <th style="width:30px"><input type="checkbox" class="checkbox" id="chk-all" onchange="toggleAllQ(this)"></th>
+              <th>#</th>
+              <th>Question (English)</th>
+              <th>Subject</th>
+              <th>Class</th>
+              <th>Difficulty</th>
+              <th>Marks</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="questions-tbody"></tbody>
+        </table>
+      </div>
+      <div id="q-pagination" style="padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:12px;color:var(--muted)">Page <span id="cur-page">1</span></span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="changePage(-1)">← Prev</button>
+          <button class="btn btn-secondary btn-sm" onclick="changePage(1)">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SUBJECTS PAGE ═══════════ -->
+  <div class="page" id="page-subjects">
+    <div class="section-hd">
+      <div><h2>📚 Subjects & Classes</h2><p style="font-size:13px;color:var(--muted)">Quiz के लिए subjects manage करो</p></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-secondary" onclick="openClassModal()">+ Class Add</button>
+        <button class="btn btn-primary" onclick="openSubjectModal()">+ Subject Add</button>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab(this,'tab-subjects-list')">Subjects</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-classes-list')">Classes</button>
+    </div>
+
+    <div class="tab-content active" id="tab-subjects-list">
+      <div id="subjects-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">
+        <!-- Generated -->
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-classes-list">
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Class Name</th><th>Level</th><th>Subjects</th><th>Questions</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="classes-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ TOPICS PAGE ═══════════ -->
+  <div class="page" id="page-topics">
+    <div class="section-hd">
+      <div><h2>🏷️ Topics</h2><p style="font-size:13px;color:var(--muted)">Subject के अंदर topics manage करो</p></div>
+      <button class="btn btn-primary" onclick="openTopicModal()">+ Topic Add</button>
+    </div>
+
+    <div class="search-row">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input class="search-inp" placeholder="Topics search करो..." oninput="filterTopics(this.value)">
+      </div>
+      <select class="sel" style="width:160px" id="flt-topic-subject" onchange="renderTopics()">
+        <option value="">All Subjects</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Topic Name</th><th>Subject</th><th>Class</th><th>Questions</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="topics-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ BULK IMPORT PAGE ═══════════ -->
+  <div class="page" id="page-bulk">
+    <div class="section-hd"><h2>📥 Bulk Question Import</h2></div>
+    <div class="two-col">
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>📄 JSON Format से Import</h3></div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">नीचे JSON paste करो या file upload करो:</p>
+            <div class="code-block" style="font-size:11px;margin-bottom:12px">
+[<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"en": "Question in English",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"hi": "Hindi में question",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"options": ["A","B","C","D"],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"correct": 0,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"subject": "Science",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"class": "Class 10",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"topic": "Physics",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"difficulty": "easy",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"marks": 1,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"neg": 0.25,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"exp": "Explanation here"<br>
+&nbsp;&nbsp;}<br>
+]
+            </div>
+            <textarea class="textarea inp-mono" id="bulk-json" rows="8" placeholder='[{"en":"Question...","options":["A","B","C","D"],"correct":0,"subject":"Science","difficulty":"easy","marks":1,"neg":0,"exp":""}]' style="font-size:12px"></textarea>
+            <div style="display:flex;gap:10px;margin-top:12px">
+              <button class="btn btn-primary" onclick="importBulkJSON()">📥 Import करो</button>
+              <button class="btn btn-secondary" onclick="document.getElementById('bulk-json').value=''">🗑 Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3>📊 CSV से Import</h3></div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">CSV format: en,hi,optA,optB,optC,optD,correct(0-3),subject,class,difficulty,marks,neg,explanation</p>
+            <div class="upload-zone" id="csv-upload-zone" onclick="document.getElementById('csv-file').click()">
+              <div class="upload-icon">📄</div>
+              <div class="upload-text">CSV File Upload करो</div>
+              <div class="upload-sub">या यहाँ drag & drop करो</div>
+              <input type="file" id="csv-file" accept=".csv,.json" style="display:none" onchange="handleFileUpload(this)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>📤 Sample Data Load</h3></div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Testing के लिए sample questions load करो:</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-secondary" onclick="loadSampleData('science')">🔬 Science (10 questions)</button>
+              <button class="btn btn-secondary" onclick="loadSampleData('math')">➕ Mathematics (10 questions)</button>
+              <button class="btn btn-secondary" onclick="loadSampleData('history')">🏛️ History (10 questions)</button>
+              <button class="btn btn-secondary" onclick="loadSampleData('all')">🚀 All Subjects (50 questions)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="import-preview-card" style="display:none">
+          <div class="card-header"><h3>👁 Import Preview</h3></div>
+          <div class="card-body" id="import-preview"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ USERS PAGE ═══════════ -->
+  <div class="page" id="page-users">
+    <div class="section-hd">
+      <div><h2>👥 Users</h2></div>
+      <button class="btn btn-primary" onclick="openAddUserModal()">+ User Add</button>
+    </div>
+
+    <div class="search-row">
+      <div class="search-box"><span class="search-icon">🔍</span><input class="search-inp" placeholder="Users search करो..." oninput="filterUsers(this.value)"></div>
+      <select class="sel" style="width:140px">
+        <option>All Users</option><option>Active</option><option>Banned</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>User</th><th>Email</th><th>Class</th><th>Points</th><th>Quizzes</th><th>Joined</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ANALYTICS PAGE ═══════════ -->
+  <div class="page" id="page-analytics">
+    <div class="stats-grid">
+      <div class="stat-card" style="--sc:var(--orange)">
+        <div class="stat-icon">📝</div>
+        <div class="stat-val" id="an-quizzes">0</div>
+        <div class="stat-lbl">Total Quizzes Played</div>
+      </div>
+      <div class="stat-card" style="--sc:var(--green)">
+        <div class="stat-icon">✅</div>
+        <div class="stat-val" id="an-accuracy">0%</div>
+        <div class="stat-lbl">Average Accuracy</div>
+      </div>
+      <div class="stat-card" style="--sc:var(--blue)">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-val" id="an-avg-time">0m</div>
+        <div class="stat-lbl">Avg. Quiz Duration</div>
+      </div>
+      <div class="stat-card" style="--sc:var(--red)">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-val" id="an-popular">—</div>
+        <div class="stat-lbl">Most Popular Subject</div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-header"><h3>📊 Quizzes per Day (Last 7 days)</h3></div>
+        <div class="card-body">
+          <div class="chart-placeholder" id="quiz-chart"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>📚 Subject Popularity</h3></div>
+        <div class="card-body" id="popularity-chart"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>📋 Difficult Questions (Most Wrong Answers)</h3></div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Question</th><th>Subject</th><th>Wrong %</th><th>Attempts</th>
+            </tr></thead>
+            <tbody id="difficult-q-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ AD MANAGEMENT PAGE ═══════════ -->
+  <div class="page" id="page-ads">
+    <div class="section-hd"><h2>📢 Ad Management (Monetag)</h2></div>
+
+    <div class="two-col">
+      <div>
+        <div class="settings-section">
+          <div class="settings-section-title">🔑 Monetag Publisher ID</div>
+          <div style="padding:16px 20px">
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Publisher ID</label>
+              <input class="inp inp-mono" id="monetag-id" placeholder="YOUR_PUB_ID_HERE">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveAdSettings()">Save करो</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">📍 Ad Placements</div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">🏠 Homepage Banner (728×90)</div><div class="settings-row-sub">Hero section के नीचे</div></div>
+            <label class="toggle"><input type="checkbox" id="ad-home-banner" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">📋 Quiz Sidebar (160×600)</div><div class="settings-row-sub">Question navigator के साथ</div></div>
+            <label class="toggle"><input type="checkbox" id="ad-quiz-sidebar" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">🎯 Result Interstitial</div><div class="settings-row-sub">Quiz खत्म होने के बाद</div></div>
+            <label class="toggle"><input type="checkbox" id="ad-result-inter" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">📱 Mobile Sticky Bottom (320×50)</div><div class="settings-row-sub">Mobile screen के bottom पर</div></div>
+            <label class="toggle"><input type="checkbox" id="ad-sticky-mob" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">🔔 Push Notifications</div><div class="settings-row-sub">Browser push ads</div></div>
+            <label class="toggle"><input type="checkbox" id="ad-push"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="settings-section">
+          <div class="settings-section-title">⏱️ Interstitial Settings</div>
+          <div style="padding:16px 20px">
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Skip Timer (seconds)</label>
+              <input class="inp" id="ad-skip-timer" type="number" value="5" min="0" max="30">
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Frequency (हर X quiz के बाद)</label>
+              <input class="inp" id="ad-frequency" type="number" value="1" min="1" max="10">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveAdSettings()">Save करो</button>
+          </div>
+        </div>
+
+        <div class="settings-section" style="margin-top:16px">
+          <div class="settings-section-title">📊 Ad Revenue Est.</div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Estimated monthly revenue (approx.)</div>
+            <div style="font-family:var(--font-head);font-size:28px;font-weight:700;color:var(--green)">₹2,400–₹8,000</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">1K-5K daily users के basis पर</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SETTINGS PAGE ═══════════ -->
+  <div class="page" id="page-settings">
+    <div class="section-hd"><h2>⚙️ Site Settings</h2></div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab(this,'tab-general')">General</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-quiz')">Quiz Settings</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-security')">Security</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-notifications')">Notifications</button>
+    </div>
+
+    <div class="tab-content active" id="tab-general">
+      <div class="settings-section">
+        <div class="settings-section-title">🌐 Site Information</div>
+        <div style="padding:16px 20px">
+          <div class="form-row form-row-2" style="margin-bottom:14px">
+            <div class="form-group">
+              <label class="form-label">Site Name</label>
+              <input class="inp" id="set-site-name" value="QuizForge">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tagline</label>
+              <input class="inp" id="set-tagline" value="India का #1 Free MCQ Platform">
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="form-label">Contact Email</label>
+              <input class="inp" id="set-email" type="email" placeholder="admin@quizforge.in">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Language Default</label>
+              <select class="sel" id="set-lang">
+                <option value="hi">Hindi (हिंदी)</option>
+                <option value="en">English</option>
+                <option value="bi">Bilingual</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="saveSiteSettings()">💾 Save करो</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">🎨 Features</div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">🏆 Leaderboard</div><div class="settings-row-sub">Public leaderboard दिखाओ</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">🔥 Daily Streak</div><div class="settings-row-sub">Streak system enable करो</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">👤 User Registration</div><div class="settings-row-sub">नए users register हो सकते हैं?</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">🌙 Dark Mode Only</div><div class="settings-row-sub">Force dark theme</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">🔒 Maintenance Mode</div><div class="settings-row-sub">Site temporarily off करो</div></div>
+          <label class="toggle"><input type="checkbox" id="toggle-maintenance"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-quiz">
+      <div class="settings-section">
+        <div class="settings-section-title">❓ Quiz Configuration</div>
+        <div style="padding:16px 20px">
+          <div class="form-row form-row-3" style="margin-bottom:14px">
+            <div class="form-group">
+              <label class="form-label">Default Questions/Quiz</label>
+              <input class="inp" type="number" value="10" min="5" max="100">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Max Questions/Quiz</label>
+              <input class="inp" type="number" value="50" min="10" max="200">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Timer per Question (sec)</label>
+              <input class="inp" type="number" value="90" min="10">
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="form-label">Negative Marking (default)</label>
+              <select class="sel">
+                <option value="0">No Negative Marking</option>
+                <option value="0.25" selected>-0.25 per wrong</option>
+                <option value="0.5">-0.5 per wrong</option>
+                <option value="1">-1 per wrong</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Points per Correct Answer</label>
+              <input class="inp" type="number" value="10" min="1">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="saveSiteSettings()">💾 Save करो</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-security">
+      <div class="settings-section">
+        <div class="settings-section-title">🔐 Admin Credentials</div>
+        <div style="padding:16px 20px">
+          <div class="form-row form-row-2" style="margin-bottom:14px">
+            <div class="form-group">
+              <label class="form-label">New Username</label>
+              <input class="inp" id="new-username" placeholder="New admin username">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input class="inp" id="cur-pass" type="password" placeholder="Current password">
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input class="inp" id="new-pass" type="password" placeholder="New password (8+ chars)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <input class="inp" id="confirm-pass" type="password" placeholder="Confirm new password">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="changeCredentials()">🔐 Update करो</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-notifications">
+      <div class="settings-section">
+        <div class="settings-section-title">🔔 Notification Settings</div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Email — New User Registration</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Email — Daily Quiz Stats</div></div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Push — New Report Filed</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ BACKUP PAGE ═══════════ -->
+  <div class="page" id="page-backup">
+    <div class="section-hd"><h2>💾 Backup & Export</h2></div>
+    <div class="two-col">
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>📤 Data Export</h3></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="btn btn-secondary" onclick="exportData('questions')">📋 Questions Export (JSON)</button>
+              <button class="btn btn-secondary" onclick="exportData('subjects')">📚 Subjects Export (JSON)</button>
+              <button class="btn btn-secondary" onclick="exportData('users')">👥 Users Export (JSON)</button>
+              <button class="btn btn-primary" onclick="exportData('all')">💾 Full Backup (JSON)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3>📥 Data Import / Restore</h3></div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Previously exported JSON backup से restore करो:</p>
+            <div class="upload-zone" onclick="document.getElementById('restore-file').click()">
+              <div class="upload-icon">📁</div>
+              <div class="upload-text">Backup File Choose करो</div>
+              <div class="upload-sub">.json file only</div>
+              <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreBackup(this)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>📊 Database Stats</h3></div>
+        <div class="card-body" id="db-stats">
+          <div style="display:flex;flex-direction:column;gap:14px" id="db-stats-inner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ REPORTS PAGE ═══════════ -->
+  <div class="page" id="page-reports">
+    <div class="section-hd"><h2>🚩 User Reports</h2></div>
+    <div class="card">
+      <div class="card-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">✅</div>
+          <h3>No Reports!</h3>
+          <p>कोई भी user report नहीं है। सब ठीक है!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══════════ QUESTION MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-question">
+<div class="modal" style="max-width:780px">
+  <button class="modal-close" onclick="closeModal('question')">✕</button>
+  <h2 class="modal-title" id="q-modal-title">Question Add करो</h2>
+  <p class="modal-sub">सभी required fields भरो। Options में से एक को ✓ Correct mark करो।</p>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab(this,'qtab-english')">🇬🇧 English</button>
+    <button class="tab-btn" onclick="switchTab(this,'qtab-hindi')">🇮🇳 Hindi</button>
+    <button class="tab-btn" onclick="switchTab(this,'qtab-meta')">⚙️ Settings</button>
+    <button class="tab-btn" onclick="switchTab(this,'qtab-preview')">👁 Preview</button>
+  </div>
+
+  <div class="tab-content active" id="qtab-english">
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Question (English) <span class="req">*</span></label>
+      <textarea class="textarea" id="q-en" rows="3" placeholder="Enter the question in English..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Options (English) — Radio button से Correct mark करो <span class="req">*</span></label>
+      <div class="options-editor" id="options-en-editor">
+        <!-- Generated dynamically -->
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:14px">
+      <label class="form-label">Explanation (English)</label>
+      <textarea class="textarea" id="q-exp-en" rows="2" placeholder="Answer का explanation..."></textarea>
+    </div>
+  </div>
+
+  <div class="tab-content" id="qtab-hindi">
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Question (Hindi)</label>
+      <textarea class="textarea" id="q-hi" rows="3" placeholder="हिंदी में सवाल लिखो..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Options (Hindi)</label>
+      <div class="options-editor" id="options-hi-editor"></div>
+    </div>
+    <div class="form-group" style="margin-top:14px">
+      <label class="form-label">Explanation (Hindi)</label>
+      <textarea class="textarea" id="q-exp-hi" rows="2" placeholder="Hindi में explanation..."></textarea>
+    </div>
+  </div>
+
+  <div class="tab-content" id="qtab-meta">
+    <div class="form-row form-row-3" style="margin-bottom:14px">
+      <div class="form-group">
+        <label class="form-label">Subject <span class="req">*</span></label>
+        <select class="sel" id="q-subject" onchange="updateTopicFilter()">
+          <option value="">Subject चुनो</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Class <span class="req">*</span></label>
+        <select class="sel" id="q-class">
+          <option value="">Class चुनो</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Topic</label>
+        <select class="sel" id="q-topic">
+          <option value="">Topic चुनो</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row form-row-4">
+      <div class="form-group">
+        <label class="form-label">Difficulty <span class="req">*</span></label>
+        <select class="sel" id="q-difficulty">
+          <option value="easy">Easy 🟢</option>
+          <option value="medium" selected>Medium 🟡</option>
+          <option value="hard">Hard 🔴</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Marks</label>
+        <input class="inp" id="q-marks" type="number" value="1" min="1" max="10">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Negative Marks</label>
+        <input class="inp" id="q-neg" type="number" value="0.25" min="0" max="5" step="0.25">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="sel" id="q-status">
+          <option value="active">Active ✅</option>
+          <option value="draft">Draft 📝</option>
+          <option value="review">Review 🔍</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:14px">
+      <label class="form-label">Tags (comma separated)</label>
+      <input class="inp" id="q-tags" placeholder="ncert, important, frequently-asked">
+    </div>
+  </div>
+
+  <div class="tab-content" id="qtab-preview">
+    <div class="q-preview" id="q-modal-preview">
+      <p style="color:var(--muted);font-size:13px">English tab में question और options fill करो...</p>
+    </div>
+  </div>
+
+  <input type="hidden" id="q-editing-id" value="">
+
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal('question')">Cancel</button>
+    <button class="btn btn-secondary" onclick="saveQuestion('draft')">📝 Draft Save</button>
+    <button class="btn btn-primary" onclick="saveQuestion('active')">✅ Publish करो</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ SUBJECT MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-subject">
+<div class="modal" style="max-width:480px">
+  <button class="modal-close" onclick="closeModal('subject')">✕</button>
+  <h2 class="modal-title" id="subj-modal-title">Subject Add करो</h2>
+  <p class="modal-sub">New subject / category create करो</p>
+
+  <div class="form-row form-row-2" style="margin-bottom:14px">
+    <div class="form-group">
+      <label class="form-label">Subject Name (English) <span class="req">*</span></label>
+      <input class="inp" id="subj-name-en" placeholder="e.g. Science">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subject Name (Hindi)</label>
+      <input class="inp" id="subj-name-hi" placeholder="e.g. विज्ञान">
+    </div>
+  </div>
+  <div class="form-row form-row-2" style="margin-bottom:14px">
+    <div class="form-group">
+      <label class="form-label">Icon (Emoji)</label>
+      <input class="inp" id="subj-icon" placeholder="🔬" maxlength="4">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Color (Hex)</label>
+      <input class="inp" id="subj-color" placeholder="#00D97E" type="color" value="#FF6B35" style="height:42px;cursor:pointer">
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:14px">
+    <label class="form-label">Exam Type (multiple select)</label>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="exam-chips">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" value="JEE" class="checkbox"> JEE</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" value="NEET" class="checkbox"> NEET</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" value="UPSC" class="checkbox"> UPSC</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" value="SSC" class="checkbox"> SSC</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" value="CBSE" class="checkbox" checked> CBSE</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" value="NCERT" class="checkbox" checked> NCERT</label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Status</label>
+    <select class="sel" id="subj-status">
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+  </div>
+  <input type="hidden" id="subj-editing-id">
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal('subject')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveSubject()">✅ Save करो</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ CLASS MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-class">
+<div class="modal" style="max-width:420px">
+  <button class="modal-close" onclick="closeModal('class')">✕</button>
+  <h2 class="modal-title">Class Add करो</h2>
+  <div class="form-group" style="margin-bottom:12px">
+    <label class="form-label">Class Name <span class="req">*</span></label>
+    <input class="inp" id="class-name" placeholder="e.g. Class 10">
+  </div>
+  <div class="form-group" style="margin-bottom:12px">
+    <label class="form-label">Level</label>
+    <select class="sel" id="class-level">
+      <option>School (6-8)</option><option>Secondary (9-10)</option>
+      <option>Senior Secondary (11-12)</option><option>Graduation</option>
+      <option>Competitive Exams</option>
+    </select>
+  </div>
+  <div class="form-group" style="margin-bottom:12px">
+    <label class="form-label">Sort Order</label>
+    <input class="inp" id="class-order" type="number" value="1" min="1">
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal('class')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveClass()">✅ Save करो</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ TOPIC MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-topic">
+<div class="modal" style="max-width:420px">
+  <button class="modal-close" onclick="closeModal('topic')">✕</button>
+  <h2 class="modal-title">Topic Add करो</h2>
+  <div class="form-group" style="margin-bottom:12px">
+    <label class="form-label">Topic Name <span class="req">*</span></label>
+    <input class="inp" id="topic-name" placeholder="e.g. Photosynthesis">
+  </div>
+  <div class="form-group" style="margin-bottom:12px">
+    <label class="form-label">Subject <span class="req">*</span></label>
+    <select class="sel" id="topic-subject"></select>
+  </div>
+  <div class="form-group" style="margin-bottom:12px">
+    <label class="form-label">Class</label>
+    <select class="sel" id="topic-class"></select>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal('topic')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveTopic()">✅ Save करो</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ CONFIRM MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-confirm">
+<div class="confirm-box">
+  <div class="confirm-icon" id="confirm-icon">⚠️</div>
+  <h3 class="confirm-title" id="confirm-title">Are you sure?</h3>
+  <p class="confirm-sub" id="confirm-sub">यह action undo नहीं होगी।</p>
+  <div class="confirm-btns">
+    <button class="btn btn-ghost" onclick="closeModal('confirm')">Cancel</button>
+    <button class="btn btn-danger" id="confirm-ok-btn">Delete करो</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ NOTIFICATION ═══════════ -->
+<div id="notification" style="display:none" class="notif">
+  <div class="notif-icon" id="notif-icon">✅</div>
+  <div>
+    <div class="notif-text" id="notif-text">Saved!</div>
+    <div class="notif-sub" id="notif-sub"></div>
+  </div>
+  <div class="notif-bar"></div>
+</div>
+
+<script src="js/admin-app.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<!-- Firebase Modules -->
+<script src="js/firebase-config.js"></script>
+<script src="js/firebase-auth.js"></script>
+<script src="js/firebase-db.js"></script>
+
+<script>
+async function adminGoogleLogin() {
+  const user = await signInWithGoogle();
+  if (user && isAdmin()) {
+    initApp();
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('app').style.display='flex';
+    showToast('Admin Check ✅');
+  } else if (user) {
+    showToast('⚠️ You are not an Admin!', 'error');
+    signOutUser();
+  }
+}
+
+// Check logged in on load
+document.addEventListener('DOMContentLoaded', () => {
+  if (isFirebaseConfigured()) {
+    auth.onAuthStateChanged(user => {
+      if (user && isAdmin()) {
+        initApp();
+        document.getElementById('login-page').style.display='none';
+        document.getElementById('app').style.display='flex';
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
