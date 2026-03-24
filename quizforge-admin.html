@@ -6,6 +6,13 @@
 <title>QuizForge — Admin Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Clash+Display:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/admin-styles.css">
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/quizforge2026/service-worker.js')
+  .then(() => console.log("SW Registered"))
+  .catch(err => console.log("SW Error", err));
+}
+</script>
 </head>
 <body>
 
