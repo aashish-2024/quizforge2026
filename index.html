@@ -12,9 +12,7 @@
   <link rel="stylesheet" href="css/index-styles.css">
   <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/quizforge2026/service-worker.js')
-  .then(() => console.log("SW Registered"))
-  .catch(err => console.log("SW Error", err));
+  navigator.serviceWorker.register('/quizforge2026/service-worker.js');
 }
 </script>
 </head>
