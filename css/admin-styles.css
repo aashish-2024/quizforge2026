@@ -988,6 +988,7 @@ tbody td {
   max-height: 90vh;
   overflow-y: auto;
   animation: fadeUp 0.25s ease;
+  clip-path: inset(0 round var(--r-xl));
 }
 
 .modal-close {
