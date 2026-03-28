@@ -801,6 +801,15 @@ window.onUserLoggedIn = function(user, profile) {
   state.isLoggedIn = true;
   state.user = profile || user;
   
+  // Check if admin
+  if (window.AUTH_ADMIN_EMAILS && window.AUTH_ADMIN_EMAILS.includes(state.user.email)) {
+    const adminLink = document.getElementById('nav-admin-link');
+    if (adminLink) adminLink.style.display = 'block';
+  } else {
+    const adminLink = document.getElementById('nav-admin-link');
+    if (adminLink) adminLink.style.display = 'none';
+  }
+
   // If the user logs in from the home page, redirect to the dashboard
   if (state.currentPage === 'home') {
     showPage('dashboard');
@@ -810,6 +819,11 @@ window.onUserLoggedIn = function(user, profile) {
 window.onUserLoggedOut = function() {
   state.isLoggedIn = false;
   state.user = null;
+  
+  // Hide admin link
+  const adminLink = document.getElementById('nav-admin-link');
+  if (adminLink) adminLink.style.display = 'none';
+
   if (state.currentPage === 'dashboard') {
     showPage('home');
   }

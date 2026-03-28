@@ -1001,17 +1001,23 @@ async function adminGoogleLogin() {
 }
 
 // Check logged in on load
-document.addEventListener('DOMContentLoaded', () => {
-  if (isFirebaseConfigured()) {
-    auth.onAuthStateChanged(user => {
-      if (user && isAdmin()) {
-        initApp();
-        document.getElementById('login-page').style.display='none';
-        document.getElementById('app').style.display='flex';
-      }
-    });
+window.onUserLoggedIn = function(user, profile) {
+  if (isAdmin()) {
+    initApp();
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('app').style.display='flex';
+  } else {
+    showToast('⚠️ You are not an Admin!', 'error');
+    signOutUser();
+    document.getElementById('app').style.display='none';
+    document.getElementById('login-page').style.display='flex';
   }
-});
+};
+
+window.onUserLoggedOut = function() {
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+};
 </script>
 </body>
 </html>

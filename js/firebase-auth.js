@@ -183,6 +183,8 @@ function isGuest() {
 // AUTH STATE LISTENER
 // ══════════════════════════════════════════════════════════
 
+let isInitialAuthCheck = true;
+
 function initAuthListener() {
   auth.onAuthStateChanged(async (user) => {
     currentUser = user;
@@ -190,10 +192,23 @@ function initAuthListener() {
       await ensureUserProfile(user, user.isAnonymous);
       updateNavForAuth(user);
       if (typeof onUserLoggedIn === 'function') onUserLoggedIn(user, currentProfile);
+      isInitialAuthCheck = false;
     } else {
       currentProfile = null;
       updateNavForAuth(null);
-      if (typeof onUserLoggedOut === 'function') onUserLoggedOut();
+      // Only call logged out hook if it's not the initial check or if we are sure there is no user
+      // Firebase often fires a quick null before resolving the user from indexedDB
+      if (!isInitialAuthCheck) {
+        if (typeof onUserLoggedOut === 'function') onUserLoggedOut();
+      } else {
+        // Wait a small amount of time to be absolutely sure it's a real logged out state
+        setTimeout(() => {
+          if (!currentUser && typeof onUserLoggedOut === 'function') {
+             onUserLoggedOut();
+          }
+        }, 1500);
+      }
+      isInitialAuthCheck = false;
     }
   });
 }
