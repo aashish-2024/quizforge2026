@@ -937,20 +937,67 @@ if ('serviceWorker' in navigator) {
   <!-- Auth UI Handlers -->
   <script>
     function handlePhoneSignIn() {
-      const num = document.getElementById('phone-number').value;
-      if (num.length !== 10) return showToast('10 digit number daalo', 'warning');
+      const raw = document.getElementById('phone-number').value;
+      // Strip non-digit characters
+      const num = raw.replace(/\D/g, '');
+      document.getElementById('phone-number').value = num; // update display
+
+      if (num.length !== 10) {
+        return showToast('⚠️ सही 10 digit number डालो', 'warning');
+      }
+      // Basic Indian mobile validation (starts with 6-9)
+      if (!/^[6-9]/.test(num)) {
+        return showToast('⚠️ Valid Indian mobile number डालो (6-9 से शुरू)', 'warning');
+      }
       signInWithPhone('+91' + num);
     }
+
     function handleVerifyOTP() {
       const inputs = document.querySelectorAll('.otp-digit');
       let otp = '';
       inputs.forEach(i => otp += i.value);
-      if (otp.length !== 6) return showToast('6 digit OTP daalo', 'warning');
+      if (otp.length !== 6) return showToast('⚠️ पूरा 6 digit OTP डालो', 'warning');
       verifyOTP(otp);
     }
+
+    // OTP input: auto-focus next, backspace goes back, digits only
     function moveNext(el, num) {
-      if (el.value.length === 1 && num < 6) document.querySelectorAll('.otp-digit')[num].focus();
+      // Only allow digits
+      el.value = el.value.replace(/\D/g, '');
+      if (el.value.length === 1 && num < 6) {
+        document.querySelectorAll('.otp-digit')[num].focus();
+      }
+      // Auto-submit when all 6 digits filled
+      const inputs = document.querySelectorAll('.otp-digit');
+      let otp = '';
+      inputs.forEach(i => otp += i.value);
+      if (otp.length === 6) handleVerifyOTP();
     }
+
+    // Enforce digits-only on phone input
+    document.addEventListener('DOMContentLoaded', () => {
+      const phoneInput = document.getElementById('phone-number');
+      if (phoneInput) {
+        phoneInput.addEventListener('input', () => {
+          phoneInput.value = phoneInput.value.replace(/\D/g, '');
+        });
+        phoneInput.addEventListener('keydown', e => {
+          if (e.key === 'Enter') handlePhoneSignIn();
+        });
+      }
+
+      // OTP backspace handling
+      document.querySelectorAll('.otp-digit').forEach((inp, i) => {
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Backspace' && !inp.value && i > 0) {
+            document.querySelectorAll('.otp-digit')[i - 1].focus();
+          }
+        });
+        inp.addEventListener('input', () => {
+          inp.value = inp.value.replace(/\D/g, '');
+        });
+      });
+    });
   </script>
 </body>
 

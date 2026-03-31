@@ -47,23 +47,47 @@ async function signInWithGoogle() {
 async function signInWithPhone(phoneNumber) {
   try {
     showAuthLoading(true);
-    // Setup reCAPTCHA
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-        size: 'invisible',
-        callback: () => { }
-      });
+
+    // Always clear old reCAPTCHA and create a fresh one
+    if (window.recaptchaVerifier) {
+      try { window.recaptchaVerifier.clear(); } catch(e) { /* ignore */ }
+      window.recaptchaVerifier = null;
     }
+
+    // Clear the container DOM to avoid duplicate widgets
+    const container = document.getElementById('recaptcha-container');
+    if (container) container.innerHTML = '';
+
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      size: 'invisible',
+      callback: () => { console.log('reCAPTCHA solved'); }
+    });
+
+    // Explicitly render reCAPTCHA before calling signInWithPhoneNumber
+    await window.recaptchaVerifier.render();
+
     const confirmation = await auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier);
     window.confirmationResult = confirmation;
     showOTPInput();
     showToast('📱 OTP भेज दिया गया!');
   } catch (error) {
     console.error('Phone sign-in error:', error);
-    showToast('❌ OTP भेजने में error: ' + error.message, 'error');
-    // Reset reCAPTCHA
+
+    // User-friendly error messages
+    const errorMessages = {
+      'auth/invalid-phone-number': '❌ गलत phone number! सही 10-digit number डालो',
+      'auth/too-many-requests': '⚠️ बहुत ज्यादा attempts! कुछ देर बाद try करो',
+      'auth/quota-exceeded': '⚠️ SMS quota खत्म हो गया, बाद में try करो',
+      'auth/captcha-check-failed': '❌ reCAPTCHA failed, page refresh करो',
+      'auth/missing-phone-number': '❌ Phone number डालो',
+      'auth/operation-not-allowed': '⚠️ Phone login enable नहीं है। Google से login करो',
+    };
+    const msg = errorMessages[error.code] || ('❌ OTP भेजने में error: ' + error.message);
+    showToast(msg, 'error');
+
+    // Reset reCAPTCHA for next attempt
     if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
+      try { window.recaptchaVerifier.clear(); } catch(e) { /* ignore */ }
       window.recaptchaVerifier = null;
     }
   } finally {
