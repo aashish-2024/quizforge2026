@@ -30,11 +30,11 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div class="nav-links">
-      <button class="nav-link active" id="nav-home-link" onclick="showPage('home')">होम</button>
-      <button class="nav-link" id="nav-quiz-link" onclick="showPage('quiz')">Quiz करें</button>
-      <button class="nav-link" id="nav-lb-link" onclick="showPage('leaderboard')">Leaderboard</button>
-      <button class="nav-link" id="nav-profile-link" onclick="showPage('profile');showProfilePage();" style="display:none">My Profile</button>
-      <button class="nav-link" id="nav-dashboard-link" onclick="showPage('dashboard')" style="display:none">Analytics</button>
+      <button class="nav-link active" id="nav-home-link" onclick="showPage('home')" data-i18n="nav.home">Home</button>
+      <button class="nav-link" id="nav-quiz-link" onclick="showPage('quiz')" data-i18n="nav.quiz">Take Quiz</button>
+      <button class="nav-link" id="nav-lb-link" onclick="showPage('leaderboard')" data-i18n="nav.leaderboard">Leaderboard</button>
+      <button class="nav-link" id="nav-profile-link" onclick="showPage('profile');showProfilePage();" style="display:none" data-i18n="nav.profile">My Profile</button>
+      <button class="nav-link" id="nav-dashboard-link" onclick="showPage('dashboard')" style="display:none" data-i18n="nav.analytics">Analytics</button>
     </div>
 
     <div class="nav-right">
@@ -43,8 +43,8 @@ if ('serviceWorker' in navigator) {
         <button class="lang-btn" onclick="setLang('hi')">HI</button>
       </div>
       <div id="nav-guest">
-        <button class="btn-nav-login" id="btn-login" onclick="openAuthModal('login')">Login</button>
-        <button class="btn-nav-cta" id="btn-register" onclick="openAuthModal('login')">Free में Join करें</button>
+        <button class="btn-nav-login" id="btn-login" onclick="openAuthModal('login')" data-i18n="nav.login">Login</button>
+        <button class="btn-nav-cta" id="btn-register" onclick="openAuthModal('login')" data-i18n="nav.join">Join Free 🚀</button>
       </div>
       <div id="user-menu" style="display:none"
         onclick="document.getElementById('user-dropdown').classList.toggle('show')">
@@ -70,13 +70,13 @@ if ('serviceWorker' in navigator) {
   <!-- Mobile menu -->
   <div id="mobile-menu"
     style="position:fixed;top:64px;left:0;right:0;background:var(--surf);border-bottom:1px solid var(--border);z-index:999;padding:16px;display:none;flex-direction:column;gap:4px">
-    <button class="nav-link" id="mob-home-link" onclick="showPage('home');closeMobileMenu()" style="text-align:left">🏠 होम</button>
-    <button class="nav-link" id="mob-quiz-link" onclick="showPage('quiz');closeMobileMenu()" style="text-align:left">❓ Quiz करें</button>
-    <button class="nav-link" id="mob-lb-link" onclick="showPage('leaderboard');closeMobileMenu()" style="text-align:left">🏆 Leaderboard</button>
-    <button class="nav-link" id="mob-profile-link" onclick="showPage('profile');showProfilePage();closeMobileMenu()" style="display:none;text-align:left">👤 My Profile</button>
-    <button class="nav-link" id="mob-dashboard-link" onclick="showPage('dashboard');closeMobileMenu()" style="display:none;text-align:left">📊 Analytics</button>
+    <button class="nav-link" id="mob-home-link" onclick="showPage('home');closeMobileMenu()" style="text-align:left" data-i18n="mob.home">🏠 Home</button>
+    <button class="nav-link" id="mob-quiz-link" onclick="showPage('quiz');closeMobileMenu()" style="text-align:left" data-i18n="mob.quiz">❓ Take Quiz</button>
+    <button class="nav-link" id="mob-lb-link" onclick="showPage('leaderboard');closeMobileMenu()" style="text-align:left" data-i18n="mob.leaderboard">🏆 Leaderboard</button>
+    <button class="nav-link" id="mob-profile-link" onclick="showPage('profile');showProfilePage();closeMobileMenu()" style="display:none;text-align:left" data-i18n="mob.profile">👤 My Profile</button>
+    <button class="nav-link" id="mob-dashboard-link" onclick="showPage('dashboard');closeMobileMenu()" style="display:none;text-align:left" data-i18n="mob.analytics">📊 Analytics</button>
     <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
-    <button class="btn-nav-cta" style="width:100%" onclick="openModal('register');closeMobileMenu()">Free में Join करें
+    <button class="btn-nav-cta" style="width:100%" onclick="openModal('register');closeMobileMenu()" data-i18n="mob.join">Join Free
       🚀</button>
   </div>
 
@@ -95,7 +95,7 @@ if ('serviceWorker' in navigator) {
         <div class="mini-card">
           <span>🔥</span>
           <div>
-            <div style="font-weight:700;font-size:13px">Rahul ने Score किया</div>
+            <div style="font-weight:700;font-size:13px" data-i18n="hero.mini.scored">Rahul Scored</div>
             <div style="font-size:11px;color:var(--muted)">95% in Science</div>
           </div>
         </div>
@@ -104,7 +104,7 @@ if ('serviceWorker' in navigator) {
         <div class="mini-card">
           <span>🏆</span>
           <div>
-            <div style="font-weight:700;font-size:13px">Daily Streak</div>
+            <div style="font-weight:700;font-size:13px" data-i18n="hero.mini.streak">Daily Streak</div>
             <div style="font-size:11px;color:var(--gold)">🔥 14 Days!</div>
           </div>
         </div>
@@ -112,44 +112,44 @@ if ('serviceWorker' in navigator) {
 
       <div class="hero-tag">
         <div class="hero-tag-dot"></div>
-        India का #1 Free MCQ Platform
+        <span data-i18n="hero.tag">India's #1 Free MCQ Platform</span>
       </div>
 
-      <h1 class="hero-title">
-        Exams के लिए<br>
-        <span class="hero-title-highlight">Smart तरीके से</span><br>
-        Practice करो
+      <h1 class="hero-title" data-i18n="hero.title">
+        Practice Smart<br>
+        <span class="hero-title-highlight">for Exams</span><br>
+        Score More
       </h1>
 
-      <p class="hero-sub">
-        Class 9 से UPSC तक — हर Subject के MCQ, Timed Quiz, और AI-powered Analytics — सब Free!
+      <p class="hero-sub" data-i18n="hero.sub">
+        Class 9 to UPSC — MCQs for every Subject, Timed Quizzes, and AI-powered Analytics — All Free!
       </p>
 
       <div class="hero-btns">
-        <button class="btn btn-primary btn-lg" onclick="startQuickQuiz()">
-          🚀 अभी Quiz शुरू करो
+        <button class="btn btn-primary btn-lg" onclick="startQuickQuiz()" data-i18n="hero.btn.start">
+          🚀 Start Quiz Now
         </button>
-        <button class="btn btn-secondary btn-lg" onclick="openModal('register')">
-          Free में Join करें →
+        <button class="btn btn-secondary btn-lg" onclick="openModal('register')" data-i18n="hero.btn.join">
+          Join Free →
         </button>
       </div>
 
       <div class="hero-stats">
         <div class="hero-stat">
           <div class="hero-stat-val" id="hero-total-q">0</div>
-          <div class="hero-stat-label">MCQ Questions</div>
+          <div class="hero-stat-label" data-i18n="hero.stat.questions">MCQ Questions</div>
         </div>
         <div class="hero-stat">
           <div class="hero-stat-val" id="hero-total-students">0</div>
-          <div class="hero-stat-label">Students</div>
+          <div class="hero-stat-label" data-i18n="hero.stat.students">Students</div>
         </div>
         <div class="hero-stat">
           <div class="hero-stat-val" id="hero-total-subjects">0</div>
-          <div class="hero-stat-label">Subjects</div>
+          <div class="hero-stat-label" data-i18n="hero.stat.subjects">Subjects</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-val">Free</div>
-          <div class="hero-stat-label">हमेशा के लिए</div>
+          <div class="hero-stat-val" data-i18n="hero.stat.free">Free</div>
+          <div class="hero-stat-label" data-i18n="hero.stat.free.label">Forever</div>
         </div>
       </div>
     </section>
@@ -164,9 +164,9 @@ if ('serviceWorker' in navigator) {
     <!-- ═══════ LIVE DASHBOARD — Real-Time Stats ═══════ -->
     <div class="section" id="live-dashboard-section">
       <div class="section-header">
-        <div class="section-tag">📊 Live Dashboard</div>
-        <h2 class="section-title">Real-Time Question Bank</h2>
-        <p class="section-sub">हर question count <strong>live</strong> है — Admin panel से add होते ही यहाँ reflect होता है</p>
+        <div class="section-tag" data-i18n="live.tag">📊 Live Dashboard</div>
+        <h2 class="section-title" data-i18n="live.title">Real-Time Question Bank</h2>
+        <p class="section-sub" data-i18n="live.sub">Every question count is <strong>live</strong> — reflects instantly when added from Admin panel</p>
       </div>
 
       <!-- Live Counter Cards -->
@@ -174,25 +174,25 @@ if ('serviceWorker' in navigator) {
         <div class="live-counter-card lcc-orange">
           <div class="lcc-icon">❓</div>
           <div class="lcc-value" id="lc-total-questions">0</div>
-          <div class="lcc-label">Total Questions</div>
+          <div class="lcc-label" data-i18n="live.total">Total Questions</div>
           <div class="lcc-live-dot"></div>
         </div>
         <div class="live-counter-card lcc-blue">
           <div class="lcc-icon">📚</div>
           <div class="lcc-value" id="lc-total-subjects">0</div>
-          <div class="lcc-label">Subjects</div>
+          <div class="lcc-label" data-i18n="live.subjects">Subjects</div>
           <div class="lcc-live-dot"></div>
         </div>
         <div class="live-counter-card lcc-green">
           <div class="lcc-icon">🏷️</div>
           <div class="lcc-value" id="lc-total-topics">0</div>
-          <div class="lcc-label">Topics</div>
+          <div class="lcc-label" data-i18n="live.topics">Topics</div>
           <div class="lcc-live-dot"></div>
         </div>
         <div class="live-counter-card lcc-purple">
           <div class="lcc-icon">🆕</div>
           <div class="lcc-value" id="lc-today-added">0</div>
-          <div class="lcc-label">Added Today</div>
+          <div class="lcc-label" data-i18n="live.today">Added Today</div>
           <div class="lcc-live-dot"></div>
         </div>
       </div>
@@ -200,7 +200,7 @@ if ('serviceWorker' in navigator) {
       <!-- Subject-wise Breakdown -->
       <div class="live-breakdown-card">
         <div class="lbc-header">
-          <h3>📈 Subject-wise Breakdown</h3>
+          <h3 data-i18n="live.breakdown">📈 Subject-wise Breakdown</h3>
           <span class="lbc-live-badge">● LIVE</span>
         </div>
         <div id="live-subject-bars" class="live-subject-bars">
@@ -213,7 +213,7 @@ if ('serviceWorker' in navigator) {
       <!-- Filter + Latest Questions -->
       <div class="live-latest-card">
         <div class="llc-header">
-          <h3>🆕 Latest Questions</h3>
+          <h3 data-i18n="live.latest">🆕 Latest Questions</h3>
           <div class="llc-filters">
             <select id="filter-subject" class="llc-filter-select" onchange="applyLatestFilter()">
               <option value="">All Subjects</option>
@@ -237,9 +237,9 @@ if ('serviceWorker' in navigator) {
     <!-- Subjects Grid (Dynamic) -->
     <div class="section">
       <div class="section-header">
-        <div class="section-tag">📚 Subjects</div>
-        <h2 class="section-title">कौन सा Subject है आज?</h2>
-        <p class="section-sub">Class-wise, Topic-wise MCQs — हर Exam की तैयारी यहाँ</p>
+        <div class="section-tag" data-i18n="subj.tag">📚 Subjects</div>
+        <h2 class="section-title" data-i18n="subj.title">Which Subject Today?</h2>
+        <p class="section-sub" data-i18n="subj.sub">Class-wise, Topic-wise MCQs — Preparation for every Exam</p>
       </div>
 
       <div class="subjects-grid" id="live-subjects-grid">
@@ -256,44 +256,40 @@ if ('serviceWorker' in navigator) {
       style="background:var(--surf);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 24px">
       <div style="max-width:1200px;margin:0 auto">
         <div class="section-header">
-          <div class="section-tag">✨ Features</div>
-          <h2 class="section-title">क्यों Students को पसंद है QuizForge?</h2>
-          <p class="section-sub">सब कुछ जो एक Smart Student को चाहिए</p>
+          <div class="section-tag" data-i18n="feat.tag">✨ Features</div>
+          <h2 class="section-title" data-i18n="feat.title">Why Students Love QuizForge?</h2>
+          <p class="section-sub" data-i18n="feat.sub">Everything a Smart Student needs</p>
         </div>
         <div class="features-grid">
           <div class="feature-card">
             <div class="feature-icon">⏱️</div>
-            <div class="feature-title">Timed Mock Tests</div>
-            <div class="feature-text">Real Exam जैसा माहौल — Timer, Negative Marking, और Strict Mode। JEE/NEET/UPSC की
-              perfect preparation।</div>
+            <div class="feature-title" data-i18n="feat.timer.title">Timed Mock Tests</div>
+            <div class="feature-text" data-i18n="feat.timer.text">Real Exam-like environment — Timer, Negative Marking, and Strict Mode. Perfect preparation for JEE/NEET/UPSC.</div>
           </div>
           <div class="feature-card">
             <div class="feature-icon">🤖</div>
-            <div class="feature-title">AI Analytics</div>
-            <div class="feature-text">कमज़ोर Topics automatically detect होते हैं। AI बताता है कहाँ ज़्यादा ध्यान देना
-              है।</div>
+            <div class="feature-title" data-i18n="feat.ai.title">AI Analytics</div>
+            <div class="feature-text" data-i18n="feat.ai.text">Weak topics are automatically detected. AI tells you where to focus more.</div>
           </div>
           <div class="feature-card">
             <div class="feature-icon">🔥</div>
-            <div class="feature-title">Daily Streak</div>
-            <div class="feature-text">रोज़ quiz करो, streak बढ़ाओ, badges जीतो। Gamification से learning fun बनती है!
-            </div>
+            <div class="feature-title" data-i18n="feat.streak.title">Daily Streak</div>
+            <div class="feature-text" data-i18n="feat.streak.text">Take quizzes daily, build your streak, win badges. Gamification makes learning fun!</div>
           </div>
           <div class="feature-card">
             <div class="feature-icon">💡</div>
-            <div class="feature-title">Detailed Explanations</div>
-            <div class="feature-text">हर सवाल का step-by-step explanation — Hindi और English दोनों में।</div>
+            <div class="feature-title" data-i18n="feat.explain.title">Detailed Explanations</div>
+            <div class="feature-text" data-i18n="feat.explain.text">Step-by-step explanation for every question — in both Hindi and English.</div>
           </div>
           <div class="feature-card">
             <div class="feature-icon">🏆</div>
-            <div class="feature-title">Live Leaderboard</div>
-            <div class="feature-text">अपने school, city, और पूरे India में rank देखो। Competition motivation देती है!
-            </div>
+            <div class="feature-title" data-i18n="feat.lb.title">Live Leaderboard</div>
+            <div class="feature-text" data-i18n="feat.lb.text">See your rank in your school, city, and all of India. Competition drives motivation!</div>
           </div>
           <div class="feature-card">
             <div class="feature-icon">📱</div>
-            <div class="feature-title">Mobile Friendly</div>
-            <div class="feature-text">Phone पर भी perfectly काम करता है — bus में, bed में, कहीं भी पढ़ो!</div>
+            <div class="feature-title" data-i18n="feat.mobile.title">Mobile Friendly</div>
+            <div class="feature-text" data-i18n="feat.mobile.text">Works perfectly on phone too — study on the bus, in bed, anywhere!</div>
           </div>
         </div>
       </div>
@@ -302,29 +298,29 @@ if ('serviceWorker' in navigator) {
     <!-- How It Works -->
     <div class="section">
       <div class="section-header">
-        <div class="section-tag">🗺️ Process</div>
-        <h2 class="section-title">कैसे काम करता है?</h2>
+        <div class="section-tag" data-i18n="how.tag">🗺️ Process</div>
+        <h2 class="section-title" data-i18n="how.title">How Does It Work?</h2>
       </div>
       <div class="steps-row">
         <div class="step">
           <div class="step-num">1</div>
-          <div class="step-title">Subject चुनो</div>
-          <div class="step-text">Class, Subject, और Topic select करो। Practice या Exam mode choose करो।</div>
+          <div class="step-title" data-i18n="how.step1.title">Choose Subject</div>
+          <div class="step-text" data-i18n="how.step1.text">Select Class, Subject, and Topic. Choose Practice or Exam mode.</div>
         </div>
         <div class="step">
           <div class="step-num">2</div>
-          <div class="step-title">Quiz दो</div>
-          <div class="step-text">MCQs solve करो। Timer चलता रहेगा — बिल्कुल real exam जैसा!</div>
+          <div class="step-title" data-i18n="how.step2.title">Take Quiz</div>
+          <div class="step-text" data-i18n="how.step2.text">Solve MCQs. Timer keeps running — just like a real exam!</div>
         </div>
         <div class="step">
           <div class="step-num">3</div>
-          <div class="step-title">Analysis देखो</div>
-          <div class="step-text">Score, accuracy, weak topics — सब analytics में दिखेगा।</div>
+          <div class="step-title" data-i18n="how.step3.title">View Analysis</div>
+          <div class="step-text" data-i18n="how.step3.text">Score, accuracy, weak topics — everything shows in analytics.</div>
         </div>
         <div class="step">
           <div class="step-num">4</div>
-          <div class="step-title">Top करो!</div>
-          <div class="step-text">रोज़ practice करो, leaderboard पर climb करो, badges जीतो!</div>
+          <div class="step-title" data-i18n="how.step4.title">Top the Charts!</div>
+          <div class="step-text" data-i18n="how.step4.text">Practice daily, climb the leaderboard, win badges!</div>
         </div>
       </div>
     </div>
@@ -333,13 +329,12 @@ if ('serviceWorker' in navigator) {
     <div
       style="background:linear-gradient(135deg,rgba(255,107,53,0.15),rgba(255,179,71,0.08));border-top:1px solid rgba(255,107,53,0.2);border-bottom:1px solid rgba(255,107,53,0.2);padding:80px 24px;text-align:center">
       <div style="max-width:600px;margin:0 auto">
-        <h2 style="font-family:var(--font-display);font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:14px">
-          आज से ही शुरू करो! 🚀
+        <h2 style="font-family:var(--font-display);font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:14px" data-i18n="cta.title">
+          Start Today! 🚀
         </h2>
-        <p style="color:var(--muted);font-size:16px;margin-bottom:28px">2 lakh से ज़्यादा students पहले से QuizForge पर
-          हैं।<br>Free में join करो, कोई credit card नहीं चाहिए।</p>
-        <button class="btn btn-primary btn-lg" onclick="openAuthModal('login')" style="font-size:16px">
-          🎯 Free Account बनाओ
+        <p style="color:var(--muted);font-size:16px;margin-bottom:28px" data-i18n="cta.sub">Over 2 lakh students are already on QuizForge.<br>Join for free, no credit card needed.</p>
+        <button class="btn btn-primary btn-lg" onclick="openAuthModal('login')" style="font-size:16px" data-i18n="cta.btn">
+          🎯 Create Free Account
         </button>
       </div>
     </div>
@@ -350,11 +345,10 @@ if ('serviceWorker' in navigator) {
         <div class="footer-grid">
           <div>
             <div class="footer-logo">🎯 QuizForge</div>
-            <div class="footer-desc">India का सबसे बड़ा free MCQ platform। Class 9 से UPSC तक, हर exam की preparation
-              यहाँ होती है।</div>
+            <div class="footer-desc" data-i18n="footer.desc">India's largest free MCQ platform. From Class 9 to UPSC, preparation for every exam happens here.</div>
           </div>
           <div>
-            <div class="footer-col-title">Subjects</div>
+            <div class="footer-col-title" data-i18n="footer.subjects">Subjects</div>
             <a class="footer-link" href="#" onclick="startSubjectQuiz('Mathematics');return false">Mathematics</a>
             <a class="footer-link" href="#" onclick="startSubjectQuiz('Physics');return false">Physics</a>
             <a class="footer-link" href="#" onclick="startSubjectQuiz('Chemistry');return false">Chemistry</a>
@@ -362,7 +356,7 @@ if ('serviceWorker' in navigator) {
             <a class="footer-link" href="#" onclick="startSubjectQuiz('History');return false">History</a>
           </div>
           <div>
-            <div class="footer-col-title">Exams</div>
+            <div class="footer-col-title" data-i18n="footer.exams">Exams</div>
             <a class="footer-link" href="#" onclick="showPage('quiz');return false">JEE Mains</a>
             <a class="footer-link" href="#" onclick="showPage('quiz');return false">NEET</a>
             <a class="footer-link" href="#" onclick="showPage('quiz');return false">UPSC</a>
@@ -370,15 +364,15 @@ if ('serviceWorker' in navigator) {
             <a class="footer-link" href="#" onclick="showPage('quiz');return false">CBSE Boards</a>
           </div>
           <div>
-            <div class="footer-col-title">Company</div>
-            <a class="footer-link" href="#">About Us</a>
-            <a class="footer-link" href="#">Privacy Policy</a>
-            <a class="footer-link" href="#">Terms of Use</a>
-            <a class="footer-link" href="#">Contact</a>
+            <div class="footer-col-title" data-i18n="footer.company">Company</div>
+            <a class="footer-link" href="#" data-i18n="footer.about">About Us</a>
+            <a class="footer-link" href="#" data-i18n="footer.privacy">Privacy Policy</a>
+            <a class="footer-link" href="#" data-i18n="footer.terms">Terms of Use</a>
+            <a class="footer-link" href="#" data-i18n="footer.contact">Contact</a>
           </div>
         </div>
         <div class="footer-bottom">
-          <div>© 2025 QuizForge. Made with ❤️ for Indian Students.</div>
+          <div data-i18n="footer.tagline">© 2025 QuizForge. Made with ❤️ for Indian Students.</div>
           <div>Ads by <span style="color:var(--gold)">Monetag</span></div>
         </div>
       </div>
@@ -920,6 +914,7 @@ if ('serviceWorker' in navigator) {
      JAVASCRIPT
 ═══════════════════════════════════════════════════════════ -->
   <script src="js/utils.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/index-app.js"></script>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
