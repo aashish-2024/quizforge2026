@@ -830,11 +830,362 @@ window.onUserLoggedOut = function() {
 };
 
 // ══════════════════════════════════════════════════════════
+// REAL-TIME SYNC — Firestore Live Listeners
+// ══════════════════════════════════════════════════════════
+const liveState = {
+  questions: [],
+  subjects: [],
+  topics: [],
+  unsubscribers: [],
+  latestPage: 1,
+  latestPerPage: 10,
+  filterSubject: '',
+  filterTopic: '',
+};
+
+// ── Animated counter ──
+function animateCounter(el, target, duration = 600) {
+  if (!el) return;
+  const start = parseInt(el.textContent) || 0;
+  if (start === target) return;
+
+  const startTime = performance.now();
+  const diff = target - start;
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // easeOut quad
+    const eased = 1 - (1 - progress) * (1 - progress);
+    el.textContent = Math.round(start + diff * eased);
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      el.textContent = target;
+      // Bump animation
+      el.classList.remove('bump');
+      void el.offsetWidth; // reflow
+      el.classList.add('bump');
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Time ago (relative) ──
+function liveTimeAgo(ts) {
+  if (!ts) return '';
+  const date = ts.toDate ? ts.toDate() : new Date(ts);
+  const d = Date.now() - date.getTime();
+  if (d < 60000) return 'अभी';
+  if (d < 3600000) return Math.floor(d / 60000) + ' min पहले';
+  if (d < 86400000) return Math.floor(d / 3600000) + ' hr पहले';
+  if (d < 604800000) return Math.floor(d / 86400000) + ' days पहले';
+  return date.toLocaleDateString('hi-IN');
+}
+
+// ── Default subject config ──
+const DEFAULT_SUBJECT_CONFIG = {
+  'Science':     { icon: '🔬', color: '#00D97E', badge: 'NCERT',    badgeClass: 'badge-green' },
+  'Mathematics': { icon: '➕', color: '#4B91F7', badge: 'Class 6–12', badgeClass: 'badge-blue' },
+  'Physics':     { icon: '⚡', color: '#00B4D8', badge: 'JEE/NEET', badgeClass: 'badge-blue' },
+  'Chemistry':   { icon: '🧪', color: '#FF4757', badge: 'JEE/NEET', badgeClass: 'badge-red' },
+  'Biology':     { icon: '🌿', color: '#2DC653', badge: 'NEET',     badgeClass: 'badge-green' },
+  'History':     { icon: '🏛️', color: '#FFB347', badge: 'UPSC/SSC', badgeClass: 'badge-gold' },
+  'Geography':   { icon: '🌍', color: '#FF6B35', badge: 'UPSC',     badgeClass: 'badge-orange' },
+  'English':     { icon: '📝', color: '#9B6DFF', badge: 'Grammar',  badgeClass: 'badge-purple' },
+};
+
+// ── Update hero stats ──
+function updateHeroStats() {
+  const activeQ = liveState.questions.filter(q => q.status === 'active' || !q.status);
+  animateCounter(document.getElementById('hero-total-q'), activeQ.length);
+  animateCounter(document.getElementById('hero-total-subjects'), liveState.subjects.length);
+  // Students count: fetch from users collection or use a static fallback
+  const studEl = document.getElementById('hero-total-students');
+  if (studEl && studEl.textContent === '0') studEl.textContent = '2L+'; // keep marketing value
+}
+
+// ── Update live counter cards ──
+function updateLiveCounters() {
+  const activeQ = liveState.questions.filter(q => q.status === 'active' || !q.status);
+
+  animateCounter(document.getElementById('lc-total-questions'), activeQ.length);
+  animateCounter(document.getElementById('lc-total-subjects'), liveState.subjects.length);
+  animateCounter(document.getElementById('lc-total-topics'), liveState.topics.length);
+
+  // Today count
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+  const todayCount = activeQ.filter(q => {
+    const d = q.createdAt?.toDate ? q.createdAt.toDate() : new Date(q.createdAt || 0);
+    return d >= todayStart;
+  }).length;
+  animateCounter(document.getElementById('lc-today-added'), todayCount);
+}
+
+// ── Render subject breakdown bars ──
+function renderSubjectBreakdown() {
+  const container = document.getElementById('live-subject-bars');
+  if (!container) return;
+
+  const activeQ = liveState.questions.filter(q => q.status === 'active' || !q.status);
+  const subjCounts = {};
+  activeQ.forEach(q => { subjCounts[q.subject] = (subjCounts[q.subject] || 0) + 1; });
+
+  const maxCount = Math.max(...Object.values(subjCounts), 1);
+
+  if (liveState.subjects.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px">No subjects yet — Admin Panel से add करो</p>';
+    return;
+  }
+
+  container.innerHTML = liveState.subjects
+    .filter(s => s.status === 'active' || !s.status)
+    .map(s => {
+      const cfg = DEFAULT_SUBJECT_CONFIG[s.name] || {};
+      const icon = s.icon || cfg.icon || '📚';
+      const color = s.color || cfg.color || '#FF6B35';
+      const cnt = subjCounts[s.name] || 0;
+      const pct = maxCount > 0 ? Math.round((cnt / maxCount) * 100) : 0;
+
+      return `<div class="lsb-row">
+        <div class="lsb-icon" style="background:${color}18;color:${color}">${icon}</div>
+        <div class="lsb-info">
+          <div class="lsb-top">
+            <span class="lsb-name">${s.name}</span>
+            <span class="lsb-count" style="color:${color}">${cnt}</span>
+          </div>
+          <div class="lsb-bar">
+            <div class="lsb-bar-fill" style="width:${pct}%;background:${color}"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ── Render dynamic subject cards ──
+function renderLiveSubjects() {
+  const grid = document.getElementById('live-subjects-grid');
+  if (!grid) return;
+
+  const activeQ = liveState.questions.filter(q => q.status === 'active' || !q.status);
+  const subjCounts = {};
+  activeQ.forEach(q => { subjCounts[q.subject] = (subjCounts[q.subject] || 0) + 1; });
+
+  const activeSubjects = liveState.subjects.filter(s => s.status === 'active' || !s.status);
+
+  if (activeSubjects.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">
+      <div style="font-size:48px;margin-bottom:12px">📚</div>
+      <p style="font-size:14px">No subjects yet — Admin panel से subjects add करो</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = activeSubjects.map(s => {
+    const cfg = DEFAULT_SUBJECT_CONFIG[s.name] || {};
+    const icon = s.icon || cfg.icon || '📚';
+    const color = s.color || cfg.color || '#FF6B35';
+    const badge = cfg.badge || (s.exams && s.exams.length ? s.exams[0] : '');
+    const badgeClass = cfg.badgeClass || 'badge-orange';
+    const cnt = subjCounts[s.name] || 0;
+
+    return `<div class="subject-card card-hover" onclick="startSubjectQuiz('${s.name}')" style="--sc:${color};--scb:${color}18">
+      <div class="subject-icon" style="background:${color}18;color:${color}">${icon}</div>
+      <div class="subject-name">${s.name}</div>
+      <div class="subject-count">${cnt > 0 ? cnt.toLocaleString() + ' Questions' : 'Coming Soon'}</div>
+      ${badge ? `<span class="badge ${badgeClass} subject-badge">${badge}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Get filtered questions for latest list ──
+function getFilteredLatest() {
+  let qs = liveState.questions
+    .filter(q => q.status === 'active' || !q.status)
+    .sort((a, b) => {
+      const da = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (a.createdAt || 0);
+      const db = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (b.createdAt || 0);
+      return db - da;
+    });
+
+  if (liveState.filterSubject) qs = qs.filter(q => q.subject === liveState.filterSubject);
+  if (liveState.filterTopic) qs = qs.filter(q => q.topic === liveState.filterTopic);
+
+  return qs;
+}
+
+// ── Render latest questions ──
+function renderLatestQuestions() {
+  const container = document.getElementById('latest-questions-list');
+  const pagination = document.getElementById('latest-questions-pagination');
+  if (!container) return;
+
+  const filteredQs = getFilteredLatest();
+  const visible = filteredQs.slice(0, liveState.latestPage * liveState.latestPerPage);
+
+  if (filteredQs.length === 0) {
+    container.innerHTML = `<div class="lq-empty">
+      <div class="lq-empty-icon">📭</div>
+      <div class="lq-empty-text">${liveState.filterSubject || liveState.filterTopic ? 'इस filter में कोई question नहीं मिला' : 'अभी तक कोई question add नहीं हुआ — Admin Panel से add करो'}</div>
+    </div>`;
+    if (pagination) pagination.style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = visible.map(q => {
+    const cfg = DEFAULT_SUBJECT_CONFIG[q.subject] || {};
+    const color = cfg.color || '#FF6B35';
+    const diffMap = { easy: ['badge-green', 'Easy'], medium: ['badge-orange', 'Medium'], hard: ['badge-red', 'Hard'] };
+    const [dc, dl] = diffMap[q.difficulty] || ['badge-orange', 'Medium'];
+
+    return `<div class="lq-item">
+      <div class="lq-accent" style="background:${color}"></div>
+      <div class="lq-content">
+        <div class="lq-question" title="${(q.en || '').replace(/"/g, '&quot;')}">${q.en || 'Untitled Question'}</div>
+        <div class="lq-meta">
+          <span class="lq-tag" style="background:${color}18;color:${color}">${cfg.icon || '📚'} ${q.subject || 'General'}</span>
+          ${q.topic ? `<span class="lq-tag" style="background:var(--surf3);color:var(--muted)">${q.topic}</span>` : ''}
+          <span class="badge ${dc}" style="font-size:10px">${dl}</span>
+          <span class="lq-time">${liveTimeAgo(q.createdAt)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Pagination
+  if (pagination) {
+    if (visible.length < filteredQs.length) {
+      pagination.style.display = 'flex';
+      document.getElementById('btn-load-more').textContent = `Load More (${filteredQs.length - visible.length} और) →`;
+    } else {
+      pagination.style.display = 'none';
+    }
+  }
+}
+
+function loadMoreQuestions() {
+  liveState.latestPage++;
+  renderLatestQuestions();
+}
+
+// ── Populate filter dropdowns ──
+function populateFilterDropdowns() {
+  const subjSelect = document.getElementById('filter-subject');
+  const topicSelect = document.getElementById('filter-topic');
+  if (!subjSelect || !topicSelect) return;
+
+  const curSubj = subjSelect.value;
+  const curTopic = topicSelect.value;
+
+  subjSelect.innerHTML = '<option value="">All Subjects</option>' +
+    liveState.subjects
+      .filter(s => s.status === 'active' || !s.status)
+      .map(s => {
+        const cfg = DEFAULT_SUBJECT_CONFIG[s.name] || {};
+        return `<option value="${s.name}">${s.icon || cfg.icon || '📚'} ${s.name}</option>`;
+      }).join('');
+
+  // Filter topics by selected subject
+  let topics = liveState.topics;
+  if (liveState.filterSubject) topics = topics.filter(t => t.subject === liveState.filterSubject);
+  topicSelect.innerHTML = '<option value="">All Topics</option>' +
+    topics.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+
+  // Restore selection
+  if (curSubj) subjSelect.value = curSubj;
+  if (curTopic) topicSelect.value = curTopic;
+}
+
+function applyLatestFilter() {
+  liveState.filterSubject = document.getElementById('filter-subject')?.value || '';
+  liveState.filterTopic = document.getElementById('filter-topic')?.value || '';
+  liveState.latestPage = 1;
+
+  // Update topic dropdown based on subject selection
+  const topicSelect = document.getElementById('filter-topic');
+  if (topicSelect) {
+    let topics = liveState.topics;
+    if (liveState.filterSubject) topics = topics.filter(t => t.subject === liveState.filterSubject);
+    const curTopic = topicSelect.value;
+    topicSelect.innerHTML = '<option value="">All Topics</option>' +
+      topics.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+    if (curTopic && topics.some(t => t.name === curTopic)) topicSelect.value = curTopic;
+    else liveState.filterTopic = '';
+  }
+
+  renderLatestQuestions();
+}
+
+// ── Master update (called on every snapshot) ──
+function onLiveDataUpdate() {
+  updateHeroStats();
+  updateLiveCounters();
+  renderSubjectBreakdown();
+  renderLiveSubjects();
+  renderLatestQuestions();
+  populateFilterDropdowns();
+  populateQuizDropdowns(); // keep quiz setup in sync too
+}
+
+// ── Initialize Firestore real-time listeners ──
+function initRealtimeSync() {
+  if (typeof isFirebaseConfigured === 'undefined' || !isFirebaseConfigured()) {
+    console.log('⚡ Firebase not configured — using localStorage fallback');
+    // Fallback: load from localStorage
+    liveState.questions = readAdmin('questions') || [];
+    liveState.subjects = readAdmin('subjects') || [];
+    liveState.topics = readAdmin('topics') || [];
+    onLiveDataUpdate();
+    return;
+  }
+
+  console.log('🔴 Starting real-time Firestore listeners...');
+
+  // Listen to questions
+  if (typeof fbListenQuestions === 'function') {
+    const unsub1 = fbListenQuestions(questions => {
+      console.log(`📦 Questions snapshot: ${questions.length} items`);
+      liveState.questions = questions;
+      onLiveDataUpdate();
+    });
+    liveState.unsubscribers.push(unsub1);
+  }
+
+  // Listen to subjects
+  if (typeof fbListenSubjects === 'function') {
+    const unsub2 = fbListenSubjects(subjects => {
+      console.log(`📚 Subjects snapshot: ${subjects.length} items`);
+      liveState.subjects = subjects;
+      onLiveDataUpdate();
+    });
+    liveState.unsubscribers.push(unsub2);
+  }
+
+  // Listen to topics
+  if (typeof fbListenTopics === 'function') {
+    const unsub3 = fbListenTopics(topics => {
+      console.log(`🏷️ Topics snapshot: ${topics.length} items`);
+      liveState.topics = topics;
+      onLiveDataUpdate();
+    });
+    liveState.unsubscribers.push(unsub3);
+  }
+}
+
+// Clean up listeners on page unload
+window.addEventListener('beforeunload', () => {
+  liveState.unsubscribers.forEach(fn => { if (typeof fn === 'function') fn(); });
+});
+
+// ══════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   // Populate dropdowns from admin localStorage
   populateQuizDropdowns();
+
+  // ── Start real-time Firestore listeners ──
+  initRealtimeSync();
 
   // ── Cross-tab sync with admin panel ──
   window.addEventListener('storage', e => {

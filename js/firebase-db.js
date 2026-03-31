@@ -190,6 +190,15 @@ function fbListenSubjects(callback) {
     });
 }
 
+function fbListenTopics(callback) {
+  return db.collection('topics')
+    .orderBy('name')
+    .onSnapshot(snapshot => {
+      const topics = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(topics);
+    });
+}
+
 // ── Analytics Queries ──
 
 async function fbGetAnalytics(uid) {

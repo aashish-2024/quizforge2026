@@ -136,15 +136,15 @@ if ('serviceWorker' in navigator) {
 
       <div class="hero-stats">
         <div class="hero-stat">
-          <div class="hero-stat-val">50K+</div>
+          <div class="hero-stat-val" id="hero-total-q">0</div>
           <div class="hero-stat-label">MCQ Questions</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-val">2L+</div>
+          <div class="hero-stat-val" id="hero-total-students">0</div>
           <div class="hero-stat-label">Students</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-val">20+</div>
+          <div class="hero-stat-val" id="hero-total-subjects">0</div>
           <div class="hero-stat-label">Subjects</div>
         </div>
         <div class="hero-stat">
@@ -161,7 +161,80 @@ if ('serviceWorker' in navigator) {
       </div>
     </div>
 
-    <!-- Subjects Grid -->
+    <!-- ═══════ LIVE DASHBOARD — Real-Time Stats ═══════ -->
+    <div class="section" id="live-dashboard-section">
+      <div class="section-header">
+        <div class="section-tag">📊 Live Dashboard</div>
+        <h2 class="section-title">Real-Time Question Bank</h2>
+        <p class="section-sub">हर question count <strong>live</strong> है — Admin panel से add होते ही यहाँ reflect होता है</p>
+      </div>
+
+      <!-- Live Counter Cards -->
+      <div class="live-counter-grid" id="live-counter-grid">
+        <div class="live-counter-card lcc-orange">
+          <div class="lcc-icon">❓</div>
+          <div class="lcc-value" id="lc-total-questions">0</div>
+          <div class="lcc-label">Total Questions</div>
+          <div class="lcc-live-dot"></div>
+        </div>
+        <div class="live-counter-card lcc-blue">
+          <div class="lcc-icon">📚</div>
+          <div class="lcc-value" id="lc-total-subjects">0</div>
+          <div class="lcc-label">Subjects</div>
+          <div class="lcc-live-dot"></div>
+        </div>
+        <div class="live-counter-card lcc-green">
+          <div class="lcc-icon">🏷️</div>
+          <div class="lcc-value" id="lc-total-topics">0</div>
+          <div class="lcc-label">Topics</div>
+          <div class="lcc-live-dot"></div>
+        </div>
+        <div class="live-counter-card lcc-purple">
+          <div class="lcc-icon">🆕</div>
+          <div class="lcc-value" id="lc-today-added">0</div>
+          <div class="lcc-label">Added Today</div>
+          <div class="lcc-live-dot"></div>
+        </div>
+      </div>
+
+      <!-- Subject-wise Breakdown -->
+      <div class="live-breakdown-card">
+        <div class="lbc-header">
+          <h3>📈 Subject-wise Breakdown</h3>
+          <span class="lbc-live-badge">● LIVE</span>
+        </div>
+        <div id="live-subject-bars" class="live-subject-bars">
+          <div class="skeleton-bar"></div>
+          <div class="skeleton-bar"></div>
+          <div class="skeleton-bar"></div>
+        </div>
+      </div>
+
+      <!-- Filter + Latest Questions -->
+      <div class="live-latest-card">
+        <div class="llc-header">
+          <h3>🆕 Latest Questions</h3>
+          <div class="llc-filters">
+            <select id="filter-subject" class="llc-filter-select" onchange="applyLatestFilter()">
+              <option value="">All Subjects</option>
+            </select>
+            <select id="filter-topic" class="llc-filter-select" onchange="applyLatestFilter()">
+              <option value="">All Topics</option>
+            </select>
+          </div>
+        </div>
+        <div id="latest-questions-list" class="latest-questions-list">
+          <div class="skeleton-question"></div>
+          <div class="skeleton-question"></div>
+          <div class="skeleton-question"></div>
+        </div>
+        <div id="latest-questions-pagination" class="llc-pagination" style="display:none">
+          <button class="btn btn-ghost btn-sm" id="btn-load-more" onclick="loadMoreQuestions()">Load More →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subjects Grid (Dynamic) -->
     <div class="section">
       <div class="section-header">
         <div class="section-tag">📚 Subjects</div>
@@ -169,55 +242,12 @@ if ('serviceWorker' in navigator) {
         <p class="section-sub">Class-wise, Topic-wise MCQs — हर Exam की तैयारी यहाँ</p>
       </div>
 
-      <div class="subjects-grid">
-        <div class="subject-card subj-math card-hover" onclick="startSubjectQuiz('Mathematics')">
-          <div class="subject-icon">➕</div>
-          <div class="subject-name">Mathematics</div>
-          <div class="subject-count">8,500+ Questions</div>
-          <span class="badge badge-blue subject-badge">Class 6–12</span>
-        </div>
-        <div class="subject-card subj-sci card-hover" onclick="startSubjectQuiz('Science')">
-          <div class="subject-icon">🔬</div>
-          <div class="subject-name">Science</div>
-          <div class="subject-count">10,200+ Questions</div>
-          <span class="badge badge-green subject-badge">NCERT</span>
-        </div>
-        <div class="subject-card subj-eng card-hover" onclick="startSubjectQuiz('English')">
-          <div class="subject-icon">📝</div>
-          <div class="subject-name">English</div>
-          <div class="subject-count">5,800+ Questions</div>
-          <span class="badge badge-purple subject-badge">Grammar</span>
-        </div>
-        <div class="subject-card subj-phys card-hover" onclick="startSubjectQuiz('Physics')">
-          <div class="subject-icon">⚡</div>
-          <div class="subject-name">Physics</div>
-          <div class="subject-count">7,200+ Questions</div>
-          <span class="badge badge-blue subject-badge">JEE/NEET</span>
-        </div>
-        <div class="subject-card subj-chem card-hover" onclick="startSubjectQuiz('Chemistry')">
-          <div class="subject-icon">🧪</div>
-          <div class="subject-name">Chemistry</div>
-          <div class="subject-count">6,900+ Questions</div>
-          <span class="badge badge-red subject-badge">JEE/NEET</span>
-        </div>
-        <div class="subject-card subj-bio card-hover" onclick="startSubjectQuiz('Biology')">
-          <div class="subject-icon">🌿</div>
-          <div class="subject-name">Biology</div>
-          <div class="subject-count">9,100+ Questions</div>
-          <span class="badge badge-green subject-badge">NEET</span>
-        </div>
-        <div class="subject-card subj-hist card-hover" onclick="startSubjectQuiz('History')">
-          <div class="subject-icon">🏛️</div>
-          <div class="subject-name">History</div>
-          <div class="subject-count">4,200+ Questions</div>
-          <span class="badge badge-gold subject-badge">UPSC/SSC</span>
-        </div>
-        <div class="subject-card subj-geo card-hover" onclick="startSubjectQuiz('Geography')">
-          <div class="subject-icon">🌍</div>
-          <div class="subject-name">Geography</div>
-          <div class="subject-count">3,800+ Questions</div>
-          <span class="badge badge-orange subject-badge">UPSC</span>
-        </div>
+      <div class="subjects-grid" id="live-subjects-grid">
+        <!-- Loading skeletons -->
+        <div class="subject-card skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="subject-card skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="subject-card skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="subject-card skeleton-card"><div class="skeleton-shimmer"></div></div>
       </div>
     </div>
 
