@@ -177,13 +177,20 @@ document.querySelectorAll('.modal-overlay').forEach(el => {
 // ══════════════════════════════════════════════════════════
 function setLang(lang) {
   state.lang = lang;
-  document.querySelectorAll('.lang-btn').forEach(b => {
-    b.classList.remove('active');
-    if ((lang === 'en' && b.textContent.trim() === 'EN') || 
-        (lang === 'hi' && b.textContent.trim() === 'HI')) {
-      b.classList.add('active');
-    }
-  });
+
+  // Apply i18n translations (the full translation system)
+  if (typeof I18N !== 'undefined' && I18N.applyLanguage) {
+    I18N.applyLanguage(lang);
+  } else {
+    // Fallback: just toggle button active states
+    document.querySelectorAll('.lang-btn').forEach(b => {
+      b.classList.remove('active');
+      if ((lang === 'en' && b.textContent.trim() === 'EN') || 
+          (lang === 'hi' && b.textContent.trim() === 'HI')) {
+        b.classList.add('active');
+      }
+    });
+  }
 
   // If quiz is active, update question display
   if (state.quizStarted) renderCurrentQuestion();
