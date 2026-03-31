@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Questions: public read, admin-only write ──
+    match /questions/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Subjects: public read, admin-only write ──
+    match /subjects/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Topics: public read, admin-only write ──
+    match /topics/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Classes: public read, admin-only write ──
+    match /classes/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Users: can read/write own profile, admin can read all ──
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── Quiz Results: user creates own, admin reads all ──
+    match /quizResults/{docId} {
+      allow read: if request.auth != null &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null;
+      allow delete: if isAdmin();
+    }
+
+    // ── Admin check helper function ──
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}

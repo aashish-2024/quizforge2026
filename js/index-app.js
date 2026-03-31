@@ -871,16 +871,9 @@ function animateCounter(el, target, duration = 600) {
   requestAnimationFrame(step);
 }
 
-// ── Time ago (relative) ──
+// ── Time ago: uses shared timeAgo() from utils.js ──
 function liveTimeAgo(ts) {
-  if (!ts) return '';
-  const date = ts.toDate ? ts.toDate() : new Date(ts);
-  const d = Date.now() - date.getTime();
-  if (d < 60000) return 'अभी';
-  if (d < 3600000) return Math.floor(d / 60000) + ' min पहले';
-  if (d < 86400000) return Math.floor(d / 3600000) + ' hr पहले';
-  if (d < 604800000) return Math.floor(d / 86400000) + ' days पहले';
-  return date.toLocaleDateString('hi-IN');
+  return (typeof timeAgo === 'function') ? timeAgo(ts) : '';
 }
 
 // ── Default subject config ──
@@ -1041,7 +1034,7 @@ function renderLatestQuestions() {
     return `<div class="lq-item">
       <div class="lq-accent" style="background:${color}"></div>
       <div class="lq-content">
-        <div class="lq-question" title="${(q.en || '').replace(/"/g, '&quot;')}">${q.en || 'Untitled Question'}</div>
+        <div class="lq-question" title="${(typeof sanitize === 'function' ? sanitize(q.en) : (q.en || '')).replace(/"/g, '&quot;')}">${typeof sanitize === 'function' ? sanitize(q.en) : (q.en || 'Untitled Question')}</div>
         <div class="lq-meta">
           <span class="lq-tag" style="background:${color}18;color:${color}">${cfg.icon || '📚'} ${q.subject || 'General'}</span>
           ${q.topic ? `<span class="lq-tag" style="background:var(--surf3);color:var(--muted)">${q.topic}</span>` : ''}
@@ -1116,22 +1109,44 @@ function applyLatestFilter() {
   renderLatestQuestions();
 }
 
-// ── Master update (called on every snapshot) ──
+// ── Master update (debounced to prevent triple re-render) ──
+let _liveUpdateTimer;
 function onLiveDataUpdate() {
-  updateHeroStats();
-  updateLiveCounters();
-  renderSubjectBreakdown();
-  renderLiveSubjects();
-  renderLatestQuestions();
-  populateFilterDropdowns();
-  populateQuizDropdowns(); // keep quiz setup in sync too
+  clearTimeout(_liveUpdateTimer);
+  _liveUpdateTimer = setTimeout(_doLiveUpdate, 100);
+}
+
+function _doLiveUpdate() {
+  try {
+    updateHeroStats();
+    updateLiveCounters();
+    renderSubjectBreakdown();
+    renderLiveSubjects();
+    renderLatestQuestions();
+    populateFilterDropdowns();
+    populateQuizDropdowns(); // keep quiz setup in sync too
+  } catch (e) {
+    console.error('Live update render error:', e);
+  }
+}
+
+// ── Firestore error handler ──
+function onFirestoreError(collection, error) {
+  console.error(`🚨 Firestore ${collection} listener error:`, error);
+  // Fallback to localStorage if connection fails
+  if (collection === 'questions') liveState.questions = readAdmin('questions') || [];
+  if (collection === 'subjects') liveState.subjects = readAdmin('subjects') || [];
+  if (collection === 'topics') liveState.topics = readAdmin('topics') || [];
+  onLiveDataUpdate();
 }
 
 // ── Initialize Firestore real-time listeners ──
 function initRealtimeSync() {
-  if (typeof isFirebaseConfigured === 'undefined' || !isFirebaseConfigured()) {
+  const useFb = (typeof fbReady === 'function') ? fbReady() :
+    (typeof isFirebaseConfigured !== 'undefined' && isFirebaseConfigured());
+
+  if (!useFb) {
     console.log('⚡ Firebase not configured — using localStorage fallback');
-    // Fallback: load from localStorage
     liveState.questions = readAdmin('questions') || [];
     liveState.subjects = readAdmin('subjects') || [];
     liveState.topics = readAdmin('topics') || [];
@@ -1141,33 +1156,42 @@ function initRealtimeSync() {
 
   console.log('🔴 Starting real-time Firestore listeners...');
 
-  // Listen to questions
+  // Listen to questions (with error callback)
   if (typeof fbListenQuestions === 'function') {
-    const unsub1 = fbListenQuestions(questions => {
-      console.log(`📦 Questions snapshot: ${questions.length} items`);
-      liveState.questions = questions;
-      onLiveDataUpdate();
-    });
+    const unsub1 = fbListenQuestions(
+      questions => {
+        console.log(`📦 Questions snapshot: ${questions.length} items`);
+        liveState.questions = questions;
+        onLiveDataUpdate();
+      },
+      err => onFirestoreError('questions', err)
+    );
     liveState.unsubscribers.push(unsub1);
   }
 
-  // Listen to subjects
+  // Listen to subjects (with error callback)
   if (typeof fbListenSubjects === 'function') {
-    const unsub2 = fbListenSubjects(subjects => {
-      console.log(`📚 Subjects snapshot: ${subjects.length} items`);
-      liveState.subjects = subjects;
-      onLiveDataUpdate();
-    });
+    const unsub2 = fbListenSubjects(
+      subjects => {
+        console.log(`📚 Subjects snapshot: ${subjects.length} items`);
+        liveState.subjects = subjects;
+        onLiveDataUpdate();
+      },
+      err => onFirestoreError('subjects', err)
+    );
     liveState.unsubscribers.push(unsub2);
   }
 
-  // Listen to topics
+  // Listen to topics (with error callback)
   if (typeof fbListenTopics === 'function') {
-    const unsub3 = fbListenTopics(topics => {
-      console.log(`🏷️ Topics snapshot: ${topics.length} items`);
-      liveState.topics = topics;
-      onLiveDataUpdate();
-    });
+    const unsub3 = fbListenTopics(
+      topics => {
+        console.log(`🏷️ Topics snapshot: ${topics.length} items`);
+        liveState.topics = topics;
+        onLiveDataUpdate();
+      },
+      err => onFirestoreError('topics', err)
+    );
     liveState.unsubscribers.push(unsub3);
   }
 }

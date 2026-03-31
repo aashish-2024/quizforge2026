@@ -170,32 +170,41 @@ async function fbUpdateUser(uid, data) {
   await db.collection('users').doc(uid).update(data);
 }
 
-// ── Real-time Listeners ──
+// ── Real-time Listeners (with error callbacks) ──
 
-function fbListenQuestions(callback) {
+function fbListenQuestions(callback, onError) {
   return db.collection('questions')
     .orderBy('createdAt', 'desc')
     .onSnapshot(snapshot => {
       const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       callback(questions);
+    }, err => {
+      console.error('Firestore questions listener error:', err);
+      if (typeof onError === 'function') onError(err);
     });
 }
 
-function fbListenSubjects(callback) {
+function fbListenSubjects(callback, onError) {
   return db.collection('subjects')
     .orderBy('name')
     .onSnapshot(snapshot => {
       const subjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       callback(subjects);
+    }, err => {
+      console.error('Firestore subjects listener error:', err);
+      if (typeof onError === 'function') onError(err);
     });
 }
 
-function fbListenTopics(callback) {
+function fbListenTopics(callback, onError) {
   return db.collection('topics')
     .orderBy('name')
     .onSnapshot(snapshot => {
       const topics = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       callback(topics);
+    }, err => {
+      console.error('Firestore topics listener error:', err);
+      if (typeof onError === 'function') onError(err);
     });
 }
 

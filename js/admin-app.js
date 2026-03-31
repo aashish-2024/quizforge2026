@@ -29,14 +29,8 @@ const DB = {
   }
 };
 
-// ── ID generator ──
-const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-
-// ── Auth ──
-const ADMIN_CREDS_KEY = 'qf_admin_creds';
-function getCreds() {
-  return DB.get('creds') || { username: 'admin', password: 'admin123' };
-}
+// ── ID generator (uses genUID from utils.js, with fallback) ──
+const genId = () => (typeof genUID === 'function') ? genUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
 // ══════════════════════════════════════════
 // INITIAL DATA SEED
@@ -92,45 +86,15 @@ function logActivity(text, sub = '') {
 }
 
 // ══════════════════════════════════════════
-// AUTH
+// AUTH (Firebase-based — see firebase-auth.js)
 // ══════════════════════════════════════════
-function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  const creds = getCreds();
-  if (u === creds.username && p === creds.password) {
-    document.getElementById('login-page').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    initApp();
-  } else {
-    showNotif('❌', 'Login Failed', 'Username या password गलत है');
-    document.getElementById('login-pass').value = '';
-  }
-}
-
-const passInput = document.getElementById('login-pass');
-if (passInput) {
-  passInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
-  });
-}
-
 function doLogout() {
+  // Use Firebase signOut if available, else just hide the panel
+  if (typeof signOutUser === 'function') {
+    signOutUser();
+  }
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-page').style.display = 'flex';
-}
-
-function changeCredentials() {
-  const creds = getCreds();
-  const cur = document.getElementById('cur-pass').value;
-  const np = document.getElementById('new-pass').value;
-  const cp = document.getElementById('confirm-pass').value;
-  const nu = document.getElementById('new-username').value.trim();
-  if (cur !== creds.password) { showNotif('❌','Wrong Password','Current password गलत है'); return; }
-  if (np && np !== cp) { showNotif('❌','Mismatch','Passwords match नहीं हो रहे'); return; }
-  if (np && np.length < 6) { showNotif('❌','Too Short','Password कम से कम 6 characters'); return; }
-  DB.set('creds', { username: nu || creds.username, password: np || creds.password });
-  showNotif('✅', 'Updated!', 'Credentials update हो गए');
 }
 
 // ══════════════════════════════════════════
@@ -320,8 +284,8 @@ function renderQTable() {
       <td><input type="checkbox" class="checkbox q-chk" data-id="${q.id}"></td>
       <td style="color:var(--muted);font-family:var(--font-mono);font-size:11px">${start + i + 1}</td>
       <td style="max-width:280px">
-        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px" title="${q.en}">${q.en}</div>
-        ${q.hi ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.hi}</div>` : ''}
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px" title="${typeof sanitize === 'function' ? sanitize(q.en) : q.en}">${typeof sanitize === 'function' ? sanitize(q.en) : q.en}</div>
+        ${q.hi ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${typeof sanitize === 'function' ? sanitize(q.hi) : q.hi}</div>` : ''}
       </td>
       <td><span class="subj-pill" style="background:${subjColor}22;color:${subjColor}">${subj?.icon || '📚'} ${q.subject || '—'}</span></td>
       <td style="font-size:12px;color:var(--muted)">${q.class || '—'}</td>
@@ -801,9 +765,9 @@ function filterTopics(val) {
 }
 
 // ══════════════════════════════════════════
-// BULK IMPORT
+// BULK IMPORT (now syncs to Firebase too)
 // ══════════════════════════════════════════
-function importBulkJSON() {
+async function importBulkJSON() {
   const raw = document.getElementById('bulk-json').value.trim();
   if (!raw) { showNotif('⚠️','Empty','JSON paste करो'); return; }
 
@@ -813,9 +777,17 @@ function importBulkJSON() {
 
   if (!Array.isArray(data)) { showNotif('❌','Format Error','Array of questions चाहिए'); return; }
 
+  // Duplicate detection: check existing questions
+  const existingQs = DB.get('questions') || [];
+  const existingTexts = new Set(existingQs.map(q => (q.en || '').trim().toLowerCase()));
+
   const imported = [];
+  let skippedDupes = 0;
   data.forEach(q => {
-    if (!q.en || !q.correct === undefined) return;
+    if (!q.en || q.correct === undefined) return;
+    // Skip duplicates
+    if (existingTexts.has(q.en.trim().toLowerCase())) { skippedDupes++; return; }
+    existingTexts.add(q.en.trim().toLowerCase());
     imported.push({
       id: genId(), createdAt: Date.now(),
       en: q.en, hi: q.hi || '',
@@ -837,10 +809,31 @@ function importBulkJSON() {
     });
   });
 
-  const existing = DB.get('questions') || [];
-  DB.set('questions', [...existing, ...imported]);
-  logActivity(`📥 Bulk import: ${imported.length} questions`, `JSON से import`);
-  showNotif('✅','Imported!',`${imported.length} questions add हो गए`);
+  if (imported.length === 0) {
+    showNotif('⚠️','No new questions',`${skippedDupes} duplicates skipped, 0 new questions`);
+    return;
+  }
+
+  // Save to localStorage
+  DB.set('questions', [...existingQs, ...imported]);
+
+  // Sync to Firebase (if configured)
+  if (typeof fbReady === 'function' && fbReady()) {
+    showNotif('⏳','Syncing...', `${imported.length} questions Firebase पर upload हो रहे हैं`);
+    try {
+      for (const q of imported) {
+        const qCopy = { ...q };
+        delete qCopy.id; // Firestore generates its own ID
+        await fbAddQuestion(qCopy);
+      }
+    } catch (e) {
+      console.error('Firebase bulk sync partial fail:', e);
+      showNotif('⚠️','Partial Sync','कुछ questions Firebase पर upload नहीं हुए');
+    }
+  }
+
+  logActivity(`📥 Bulk import: ${imported.length} questions`, `JSON से import${skippedDupes ? ` (${skippedDupes} duplicates skipped)` : ''}`);
+  showNotif('✅','Imported!',`${imported.length} questions add हो गए${skippedDupes ? `, ${skippedDupes} duplicates skipped` : ''}`);
   document.getElementById('bulk-json').value = '';
   renderQuestions();
   updateBadges();
@@ -958,8 +951,35 @@ function renderUsers() {
 }
 
 function filterUsers(val) {
-  // Could filter by name/email — simplified
-  renderUsers();
+  const searchVal = (val || '').toLowerCase();
+  const users = DB.get('users') || [];
+  const filtered = searchVal ? users.filter(u =>
+    (u.name || '').toLowerCase().includes(searchVal) ||
+    (u.email || '').toLowerCase().includes(searchVal)
+  ) : users;
+  // Re-render with filtered data
+  const tbody = document.getElementById('users-tbody');
+  if (tbody && filtered.length > 0) {
+    tbody.innerHTML = filtered.map(u => {
+      const initial = u.name?.charAt(0).toUpperCase() || 'U';
+      const joinDate = new Date(u.joinedAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:10px"><div class="user-row-avatar" style="background:${u.color||'#888'}">${initial}</div><div><div style="font-weight:600">${typeof sanitize === 'function' ? sanitize(u.name) : u.name}</div></div></div></td>
+        <td style="color:var(--muted)">${typeof sanitize === 'function' ? sanitize(u.email) : u.email}</td>
+        <td><span class="tag">${u.class||'—'}</span></td>
+        <td style="font-family:var(--font-mono);color:var(--gold)">⚡ ${u.points||0}</td>
+        <td style="font-family:var(--font-mono)">${u.quizzes||0}</td>
+        <td style="font-size:12px;color:var(--muted)">${joinDate}</td>
+        <td><span class="badge ${u.status==='active'?'badge-green':'badge-red'}">${u.status||'active'}</span></td>
+        <td><div class="td-actions">
+          <button class="btn btn-sm btn-secondary" onclick="toggleUserStatus('${u.id}','${u.status}')">${u.status==='active'?'🚫 Ban':'✅ Unban'}</button>
+          <button class="btn-icon" onclick="deleteUser('${u.id}')">🗑</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  } else if (tbody) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">${searchVal ? 'No matching users found' : 'No users'}</td></tr>`;
+  }
 }
 
 function toggleUserStatus(id, currentStatus) {
@@ -1164,16 +1184,19 @@ function showConfirm(icon, title, sub, cb) {
 let _notifTimeout;
 function showNotif(icon, text, sub = '') {
   const el = document.getElementById('notification');
-  document.getElementById('notif-icon').textContent = icon;
-  document.getElementById('notif-text').textContent = text;
-  document.getElementById('notif-sub').textContent = sub;
+  if (!el) return;
+  const iconEl = document.getElementById('notif-icon');
+  const textEl = document.getElementById('notif-text');
+  const subEl = document.getElementById('notif-sub');
+  if (iconEl) iconEl.textContent = icon;
+  if (textEl) textEl.textContent = text;
+  if (subEl) subEl.textContent = sub;
 
-  // Reset bar
-  el.innerHTML = el.innerHTML;
+  // Remove old progress bar and add new one (without destroying DOM)
+  el.querySelectorAll('.notif-bar').forEach(b => b.remove());
   el.style.display = 'flex';
   el.classList.remove('hide');
 
-  // Reanimate bar
   const bar = document.createElement('div');
   bar.className = 'notif-bar';
   el.appendChild(bar);
