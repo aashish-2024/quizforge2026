@@ -20,14 +20,52 @@ let currentUser = null;
 let currentProfile = null;
 
 // ══════════════════════════════════════════════════════════
+// LOGIN CONTROL CHECK
+// ══════════════════════════════════════════════════════════
+
+// Check if user login is allowed before proceeding
+async function checkLoginControl() {
+  // Only enforce on index page (not admin page)
+  if (window.location.pathname.includes('admin')) return { allowed: true };
+  if (typeof fbGetLoginControl !== 'function' || !fbReady()) return { allowed: true };
+
+  try {
+    const ctrl = await fbGetLoginControl();
+    if (ctrl.login_mode === 'admin') {
+      return { allowed: false, reason: '🛡️ Admin currently active है। अभी user login नहीं हो सकता।' };
+    }
+    if (ctrl.user_login_enabled === false) {
+      return { allowed: false, reason: '🔒 User login admin द्वारा disable किया गया है।' };
+    }
+    return { allowed: true };
+  } catch (e) {
+    console.warn('Login control check failed, allowing login:', e);
+    return { allowed: true }; // fail-open so login isn't permanently blocked
+  }
+}
+
+// ══════════════════════════════════════════════════════════
 // SIGN IN METHODS
 // ══════════════════════════════════════════════════════════
 
 async function signInWithGoogle() {
   try {
+    // Check login control before proceeding
+    const ctrl = await checkLoginControl();
+    if (!ctrl.allowed) {
+      showToast(ctrl.reason, 'error');
+      return null;
+    }
+
     showAuthLoading(true);
     const result = await auth.signInWithPopup(googleProvider);
     await ensureUserProfile(result.user);
+
+    // Set login mode to user (only on index page)
+    if (!window.location.pathname.includes('admin') && typeof fbSetLoginControl === 'function' && fbReady()) {
+      await fbSetLoginControl({ login_mode: 'user' });
+    }
+
     showToast('✅ Google से login successful!');
     closeAuthModal();
     return result.user;
@@ -46,6 +84,13 @@ async function signInWithGoogle() {
 
 async function signInWithPhone(phoneNumber) {
   try {
+    // Check login control before proceeding
+    const ctrl = await checkLoginControl();
+    if (!ctrl.allowed) {
+      showToast(ctrl.reason, 'error');
+      return null;
+    }
+
     showAuthLoading(true);
 
     // Always clear old reCAPTCHA and create a fresh one
@@ -115,9 +160,22 @@ async function verifyOTP(otp) {
 
 async function signInAsGuest() {
   try {
+    // Check login control before proceeding
+    const ctrl = await checkLoginControl();
+    if (!ctrl.allowed) {
+      showToast(ctrl.reason, 'error');
+      return null;
+    }
+
     showAuthLoading(true);
     const result = await auth.signInAnonymously();
     await ensureUserProfile(result.user, true);
+
+    // Set login mode to user
+    if (!window.location.pathname.includes('admin') && typeof fbSetLoginControl === 'function' && fbReady()) {
+      await fbSetLoginControl({ login_mode: 'user' });
+    }
+
     showToast('👤 Guest mode active! (Limited features)');
     closeAuthModal();
     return result.user;
@@ -132,6 +190,10 @@ async function signInAsGuest() {
 
 async function signOutUser() {
   try {
+    // Reset login mode on user logout (only on index page)
+    if (!window.location.pathname.includes('admin') && typeof fbSetLoginControl === 'function' && fbReady()) {
+      try { await fbSetLoginControl({ login_mode: 'none' }); } catch(e) { /* ignore */ }
+    }
     await auth.signOut();
     currentUser = null;
     currentProfile = null;

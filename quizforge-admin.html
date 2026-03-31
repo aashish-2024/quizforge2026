@@ -139,6 +139,36 @@
       </div>
     </div>
 
+    <!-- Login Control Toggle -->
+    <div class="card" style="margin-bottom:20px;border:1px solid var(--border)">
+      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+        <h3>🔐 Login Control</h3>
+        <span class="badge" id="login-mode-badge" style="font-size:11px">—</span>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+        <!-- Current Mode Display -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:var(--surf2)">
+          <div>
+            <div style="font-size:13px;font-weight:600">Current Login Mode</div>
+            <div style="font-size:12px;color:var(--muted)" id="login-mode-text">Loading...</div>
+          </div>
+          <div id="login-mode-icon" style="font-size:24px">⏳</div>
+        </div>
+
+        <!-- User Login Toggle -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:var(--surf2)">
+          <div>
+            <div style="font-size:13px;font-weight:600">👥 User Login Access</div>
+            <div style="font-size:12px;color:var(--muted)" id="user-login-status-text">Users can login from index page</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="toggle-user-login" checked onchange="handleUserLoginToggle(this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="section-hd"><h2>⚡ Quick Actions</h2></div>
     <div class="quick-actions" style="margin-bottom:24px">
@@ -988,10 +1018,75 @@
 <script src="js/firebase-db.js"></script>
 
 <script>
+// ── Login Control Toggle Handler ──
+async function handleUserLoginToggle(enabled) {
+  if (typeof fbSetLoginControl !== 'function' || !fbReady()) return;
+  try {
+    await fbSetLoginControl({ user_login_enabled: enabled });
+    showNotif(enabled ? '✅' : '🔒', 'User Login', enabled ? 'Users अब login कर सकते हैं' : 'User login disabled कर दिया');
+  } catch (e) {
+    console.error('Toggle error:', e);
+    showNotif('❌', 'Error', 'Login control update fail हुआ');
+    // Revert toggle
+    const toggle = document.getElementById('toggle-user-login');
+    if (toggle) toggle.checked = !enabled;
+  }
+}
+
+// ── Update Login Control UI ──
+function updateLoginControlUI(data) {
+  const badge = document.getElementById('login-mode-badge');
+  const modeText = document.getElementById('login-mode-text');
+  const modeIcon = document.getElementById('login-mode-icon');
+  const toggle = document.getElementById('toggle-user-login');
+  const statusText = document.getElementById('user-login-status-text');
+
+  if (!data) return;
+
+  // Update mode display
+  const modeMap = {
+    'admin': { text: 'Admin Active', icon: '🛡️', badge: 'badge-orange', badgeText: 'ADMIN MODE' },
+    'user':  { text: 'User Active', icon: '👤', badge: 'badge-blue', badgeText: 'USER MODE' },
+    'none':  { text: 'No one logged in', icon: '🟢', badge: 'badge-green', badgeText: 'IDLE' }
+  };
+  const mode = modeMap[data.login_mode] || modeMap['none'];
+  if (badge) { badge.textContent = mode.badgeText; badge.className = 'badge ' + mode.badge; }
+  if (modeText) modeText.textContent = mode.text;
+  if (modeIcon) modeIcon.textContent = mode.icon;
+
+  // Update toggle
+  if (toggle) toggle.checked = data.user_login_enabled !== false;
+  if (statusText) {
+    statusText.textContent = data.user_login_enabled !== false
+      ? '✅ Users index page से login कर सकते हैं'
+      : '🔒 User login disabled है';
+    statusText.style.color = data.user_login_enabled !== false ? 'var(--green)' : 'var(--red)';
+  }
+}
+
+// ── Init Login Control Listener ──
+function initLoginControl() {
+  if (typeof fbListenLoginControl !== 'function' || !fbReady()) return;
+  fbListenLoginControl(
+    data => updateLoginControlUI(data),
+    err => console.error('Login control listener failed:', err)
+  );
+}
+
+// ── Admin Google Login (sets login_mode) ──
 async function adminGoogleLogin() {
   const user = await signInWithGoogle();
   if (user && isAdmin()) {
+    // Set login mode to admin and disable user login
+    if (typeof fbSetLoginControl === 'function' && fbReady()) {
+      await fbSetLoginControl({
+        login_mode: 'admin',
+        user_login_enabled: false,
+        admin_active_since: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
     initApp();
+    initLoginControl();
     document.getElementById('login-page').style.display='none';
     document.getElementById('app').style.display='flex';
     showToast('Admin Check ✅');
@@ -1004,7 +1099,16 @@ async function adminGoogleLogin() {
 // Check logged in on load
 window.onUserLoggedIn = function(user, profile) {
   if (isAdmin()) {
+    // Set login mode to admin
+    if (typeof fbSetLoginControl === 'function' && fbReady()) {
+      fbSetLoginControl({
+        login_mode: 'admin',
+        user_login_enabled: false,
+        admin_active_since: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
     initApp();
+    initLoginControl();
     document.getElementById('login-page').style.display='none';
     document.getElementById('app').style.display='flex';
   } else {
@@ -1016,6 +1120,13 @@ window.onUserLoggedIn = function(user, profile) {
 };
 
 window.onUserLoggedOut = function() {
+  // Reset login mode on logout
+  if (typeof fbSetLoginControl === 'function' && fbReady()) {
+    fbSetLoginControl({
+      login_mode: 'none',
+      admin_active_since: null
+    });
+  }
   document.getElementById('app').style.display='none';
   document.getElementById('login-page').style.display='flex';
 };

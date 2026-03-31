@@ -208,6 +208,41 @@ function fbListenTopics(callback, onError) {
     });
 }
 
+// ══════════════════════════════════════════════════════════
+// LOGIN CONTROL — Admin/User Mutex
+// ══════════════════════════════════════════════════════════
+
+// Read current login control state
+async function fbGetLoginControl() {
+  const doc = await db.collection('siteConfig').doc('loginControl').get();
+  if (doc.exists) return doc.data();
+  // Initialize default if not exists
+  const defaults = { login_mode: 'none', user_login_enabled: true, admin_active_since: null, updated_at: firebase.firestore.FieldValue.serverTimestamp() };
+  await db.collection('siteConfig').doc('loginControl').set(defaults);
+  return defaults;
+}
+
+// Update login control state (admin only)
+async function fbSetLoginControl(data) {
+  data.updated_at = firebase.firestore.FieldValue.serverTimestamp();
+  await db.collection('siteConfig').doc('loginControl').set(data, { merge: true });
+}
+
+// Real-time listener on login control
+function fbListenLoginControl(callback, onError) {
+  return db.collection('siteConfig').doc('loginControl')
+    .onSnapshot(doc => {
+      if (doc.exists) {
+        callback(doc.data());
+      } else {
+        callback({ login_mode: 'none', user_login_enabled: true, admin_active_since: null });
+      }
+    }, err => {
+      console.error('Login control listener error:', err);
+      if (typeof onError === 'function') onError(err);
+    });
+}
+
 // ── Analytics Queries ──
 
 async function fbGetAnalytics(uid) {
